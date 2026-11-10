@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InLog</title>
+<meta name="theme-color" content="#0d0f14" id="meta-theme">
+<script>try{var m=localStorage.getItem("inlog_theme")||"dark",d=m==="dark"||(m==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.theme=d?"dark":"light";var a=localStorage.getItem("inlog_accent");if(a)document.documentElement.style.setProperty("--accent",a);if(localStorage.getItem("inlog_reduce"))document.documentElement.classList.add("reduce")}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================
+   InLog — folha de estilos única
+   1. Tokens  2. Base  3. Header  4. Layout  5. Componentes
+   6. Autenticação  7. Perfil  8. Responsivo
+   ========================================================== */
+
+/* 1. TOKENS — altera aqui as cores e o "feeling" da app */
+:root {
+  --bg: #0d0f14;          /* fundo da página */
+  --surface: #151822;     /* cartões */
+  --surface-2: #1d2130;   /* campos, hover */
+  --line: #262b3b;        /* bordas */
+  --text: #eceef5;
+  --muted: #8a92a8;
+  --accent: #8b7bff;      /* cor de destaque (violeta-íris) */
+  --accent-2: #5ee0c1;    /* destaque secundário (menta) */
+  --danger: #ff6b81;
+  --r-sm: 10px; --r-md: 14px; --r-lg: 20px;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --header-bg: rgba(13, 15, 20, .85);
+  --font: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* 2. BASE */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 400 15px/1.55 var(--font); -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { margin: 0; letter-spacing: -.02em; }
+.muted { color: var(--muted); }
+
+/* Botões */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 18px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2); cursor: pointer; font-weight: 600; transition: transform .2s var(--ease), background .2s, border-color .2s; }
+.btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+.btn:active { transform: translateY(0) scale(.98); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #12102a; }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-block { width: 100%; padding: 12px; }
+
+/* Avatar: iniciais sobre gradiente (trocar por <img> quando houver fotos) */
+.avatar { width: 44px; height: 44px; flex: none; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: #12102a; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+.avatar.lg { width: 96px; height: 96px; font-size: 32px; border: 4px solid var(--bg); }
+
+/* 3. HEADER */
+.header { position: sticky; top: 0; z-index: 20; background: var(--header-bg); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.header-in { max-width: 1080px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 20px; }
+.logo { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; letter-spacing: -.04em; }
+.logo svg { width: 28px; height: 28px; }
+.nav { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.nav a:not(.btn) { padding: 8px 14px; border-radius: 999px; color: var(--muted); transition: color .2s, background .2s; }
+.nav a:not(.btn):hover, .nav a.active { color: var(--text); background: var(--surface-2); }
+.burger { display: none; margin-left: auto; background: none; border: 0; padding: 8px; cursor: pointer; }
+.burger span { display: block; width: 22px; height: 2px; margin: 5px 0; background: var(--text); border-radius: 2px; transition: transform .25s var(--ease), opacity .2s; }
+.burger[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* 4. LAYOUT (3 colunas no desktop, 1 no telemóvel) */
+.layout { max-width: 1080px; margin: 0 auto; padding: 20px 16px 90px; display: grid; grid-template-columns: 250px minmax(0, 1fr) 250px; gap: 20px; align-items: start; }
+.side { position: sticky; top: 76px; display: grid; gap: 16px; }
+.feed { display: grid; gap: 14px; }
+
+/* 5. COMPONENTES */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 16px; }
+.user-card { text-align: center; }
+.user-card .avatar { margin: 0 auto 10px; width: 64px; height: 64px; font-size: 22px; }
+.stats { display: flex; justify-content: space-around; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.stats b { display: block; font-size: 18px; }
+.stats span { font-size: 12px; color: var(--muted); }
+
+.composer { display: flex; align-items: center; gap: 12px; width: 100%; cursor: pointer; text-align: left; color: var(--muted); transition: border-color .2s; }
+.composer:hover { border-color: var(--accent); }
+
+/* Publicação */
+.post { display: flex; gap: 12px; position: relative; animation: enter .35s var(--ease) both; }
+.post-body { min-width: 0; flex: 1; }
+.post-head { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+.post-head b { font-weight: 700; }
+.post-text { margin: 4px 0 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.actions { display: flex; gap: 6px; margin-left: -8px; }
+.act { background: none; border: 0; padding: 6px 10px; border-radius: 999px; color: var(--muted); cursor: pointer; transition: color .2s, background .2s, transform .2s var(--ease); }
+.act:hover { background: var(--surface-2); color: var(--text); }
+.act.liked { color: var(--danger); }
+.act.liked .heart { animation: pop .3s var(--ease); display: inline-block; }
+@keyframes enter { from { opacity: 0; transform: translateY(8px); } }
+@keyframes pop { 50% { transform: scale(1.4); } }
+
+.list-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.list-item .avatar { width: 36px; height: 36px; font-size: 13px; }
+.list-item .btn { margin-left: auto; padding: 5px 12px; font-size: 13px; }
+.card h3 { font-size: 15px; margin-bottom: 6px; }
+
+/* Botão flutuante (só telemóvel) */
+.fab { display: none; position: fixed; right: 18px; bottom: 18px; width: 56px; height: 56px; border-radius: 50%; border: 0; background: var(--accent); color: #12102a; font-size: 28px; cursor: pointer; box-shadow: 0 8px 24px rgba(139, 123, 255, .4); transition: transform .2s var(--ease); }
+.fab:active { transform: scale(.92); }
+
+/* Diálogo (criar publicação / editar perfil) */
+dialog { width: min(520px, calc(100% - 32px)); background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px; }
+dialog::backdrop { background: rgba(5, 6, 10, .7); backdrop-filter: blur(3px); }
+dialog[open] { animation: enter .25s var(--ease); }
+dialog h2 { font-size: 18px; margin-bottom: 14px; }
+.dialog-actions { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 14px; }
+.counter { margin-right: auto; font-size: 13px; color: var(--muted); }
+
+/* Formulários */
+.field { display: grid; gap: 6px; margin-bottom: 14px; }
+.field label { font-size: 13px; color: var(--muted); font-weight: 600; }
+.input { width: 100%; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-md); transition: border-color .2s, box-shadow .2s; }
+.input:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139, 123, 255, .2); }
+textarea.input { resize: vertical; min-height: 110px; }
+.error { color: var(--danger); font-size: 13px; min-height: 18px; margin: 0 0 8px; }
+
+/* Aviso temporário */
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 16px; width: max-content; max-width: 90vw; text-align: center; font-weight: 600; opacity: 0; pointer-events: none; transition: .3s var(--ease); z-index: 50; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 6. AUTENTICAÇÃO */
+.auth { min-height: 100vh; display: grid; place-items: center; padding: 20px; background: radial-gradient(600px 300px at 50% 0, rgba(139, 123, 255, .16), transparent); }
+.auth-card { width: min(400px, 100%); padding: 28px; animation: enter .4s var(--ease) both; }
+.auth-card .logo { justify-content: center; margin-bottom: 6px; }
+.auth-card h1 { font-size: 20px; text-align: center; }
+.auth-card .sub { text-align: center; margin: 4px 0 22px; }
+.auth-foot { text-align: center; margin: 18px 0 0; color: var(--muted); }
+.auth-foot a { color: var(--accent); font-weight: 700; }
+
+/* 7. PERFIL */
+.profile { max-width: 680px; margin: 0 auto; padding: 0 16px 90px; }
+.cover { height: 150px; margin-top: 16px; border-radius: var(--r-lg); background: linear-gradient(120deg, #26215a, #14303a); }
+.profile-head { display: flex; align-items: flex-end; justify-content: space-between; margin: -48px 16px 0; }
+.profile-info { padding: 12px 16px 0; }
+.profile-info h1 { font-size: 24px; }
+.profile-stats { display: flex; gap: 22px; margin: 14px 0 22px; }
+.profile-stats b { font-size: 17px; }
+
+/* 8. RESPONSIVO */
+@media (max-width: 960px) { .layout { grid-template-columns: 230px minmax(0, 1fr); } .side-right { display: none; } }
+@media (max-width: 720px) {
+  .nav-ic .lbl { display: inline; margin-left: 6px; }
+  .layout { grid-template-columns: 1fr; padding-top: 14px; }
+  .side-left { position: static; }
+  .burger { display: block; }
+  .nav { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: stretch; padding: 12px 16px 16px; background: var(--surface); border-bottom: 1px solid var(--line); margin: 0; }
+  .nav.open { display: flex; animation: enter .25s var(--ease); }
+  .nav .btn { margin-top: 6px; }
+  .fab { display: block; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* Tema claro */
+html[data-theme="light"] { --bg: #f4f5fa; --surface: #ffffff; --surface-2: #eceef6; --line: #dcdfeb; --text: #14161f; --muted: #626a80; --header-bg: rgba(244, 245, 250, .88); color-scheme: light; }
+html.reduce *, html.reduce *::before, html.reduce *::after { animation: none !important; transition: none !important; }
+html.reduce .fx-layer { display: none; }
+dialog { max-height: 90dvh; overflow-y: auto; }
+.nav .nav-ic { display: inline-flex; align-items: center; } .nav-ic .lbl { display: none; }
+.swatches { display: flex; gap: 10px; flex-wrap: wrap; }
+.swatch { width: 36px; height: 36px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: transform .2s var(--ease); }
+.swatch:hover { transform: scale(1.1); } .swatch.on { border-color: var(--text); }
+/* Molduras do avatar */
+.avatar[data-frame="gold"] { box-shadow: 0 0 0 3px #f5c542, 0 0 14px 2px rgba(245,197,66,.55); }
+.avatar[data-frame="neon"] { box-shadow: 0 0 0 3px var(--accent), 0 0 16px 3px var(--accent); animation: pulse 2.2s ease-in-out infinite; }
+.avatar[data-frame="rainbow"] { animation: rainbow 4s linear infinite; }
+.avatar[data-frame="fire"] { box-shadow: 0 0 0 3px #ff7a1a, 0 0 16px 3px #ff3d00; animation: flicker 1.2s ease-in-out infinite; }
+.avatar[data-frame="ice"] { box-shadow: 0 0 0 3px #8be9ff, 0 0 16px 3px rgba(139,233,255,.7); }
+.avatar[data-frame="rose"] { box-shadow: 0 0 0 3px #ff7eb6, 0 0 14px 2px rgba(255,126,182,.6); }
+@keyframes pulse { 50% { box-shadow: 0 0 0 3px var(--accent), 0 0 26px 7px var(--accent); } }
+@keyframes flicker { 50% { box-shadow: 0 0 0 3px #ffb347, 0 0 24px 6px #ff5a1f; } }
+@keyframes rainbow { 0% { box-shadow: 0 0 0 3px #ff4d6d, 0 0 12px #ff4d6d; } 20% { box-shadow: 0 0 0 3px #ffd24d, 0 0 12px #ffd24d; } 40% { box-shadow: 0 0 0 3px #4dff88, 0 0 12px #4dff88; } 60% { box-shadow: 0 0 0 3px #4dd2ff, 0 0 12px #4dd2ff; } 80% { box-shadow: 0 0 0 3px #b04dff, 0 0 12px #b04dff; } 100% { box-shadow: 0 0 0 3px #ff4d6d, 0 0 12px #ff4d6d; } }
+/* Efeitos de perfil (partículas sobre o banner) */
+.cover { position: relative; overflow: hidden; background-size: cover; background-position: center; }
+.fx-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.fx-layer span { position: absolute; left: var(--x); width: var(--s); height: var(--s); opacity: 0; border-radius: 50%; animation-delay: var(--dl); animation-duration: var(--d); animation-iteration-count: infinite; }
+.fx-stars span { top: var(--y); background: #fff; box-shadow: 0 0 6px #fff; animation-name: twinkle; animation-timing-function: ease-in-out; }
+.fx-snow span, .fx-confetti span, .fx-rain span { top: -20px; animation-name: fall; animation-timing-function: linear; }
+.fx-snow span { background: #fff; }
+.fx-confetti span { background: var(--c); border-radius: 2px; }
+.fx-rain span { width: 2px; height: 16px; background: rgba(160,200,255,.8); border-radius: 2px; }
+.fx-embers span { bottom: -12px; background: #ff9a4d; box-shadow: 0 0 8px #ff6a00; animation-name: rise; animation-timing-function: ease-in; }
+@keyframes twinkle { 0%, 100% { opacity: 0; transform: scale(.4); } 50% { opacity: 1; transform: scale(1.2); } }
+@keyframes fall { 0% { transform: translate(0, 0) rotate(0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translate(14px, 190px) rotate(260deg); opacity: 0; } }
+@keyframes rise { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(-12px, -170px); opacity: 0; } }
+/* Banner por baixo do avatar e dos botões */
+.profile-head { position: relative; z-index: 2; }
+/* Botão de definições ao lado do menu (canto superior direito) */
+.logo { order: 0; } .nav { order: 1; } .hdr-gear { order: 2; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: var(--text); transition: background .2s; } .burger { order: 3; }
+.hdr-gear:hover, .hdr-gear.active { background: var(--surface-2); }
+@media (max-width: 720px) { .hdr-gear { margin-left: auto; } .burger { margin-left: 0; } }
+/* Respostas (comentários) */
+.avatar.sm { width: 32px; height: 32px; font-size: 12px; }
+.thread { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
+.thread-list { display: grid; gap: 12px; } .reply { display: flex; gap: 10px; align-items: flex-start; } .reply .post-text { margin: 2px 0 0; }
+.thread-form { display: flex; gap: 8px; } .thread-form .btn { padding: 8px 14px; flex: none; }
+.act.cmt.on { color: var(--accent); }
+/* Código de recuperação */
+.codebox { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 20px; letter-spacing: .06em; text-align: center; padding: 14px; margin: 12px 0 6px; background: var(--surface-2); border: 1px dashed var(--accent); border-radius: var(--r-md); user-select: all; word-break: break-all; }
+.tips { padding-left: 18px; margin: 10px 0 14px; color: var(--muted); font-size: 14px; display: grid; gap: 6px; }
+/* Ícones (máscaras: mudam de cor com o tema) */
+.ic { display: inline-block; width: 1.15em; height: 1.15em; vertical-align: -.2em; background-color: currentColor; -webkit-mask: center / contain no-repeat; mask: center / contain no-repeat; }
+.ic-phone { -webkit-mask-image: url(data:image/png;base64,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); mask-image: url(data:image/png;base64,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); }
+.ic-trash { -webkit-mask-image: url(data:image/png;base64,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); mask-image: url(data:image/png;base64,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); }
+.ic-heart { -webkit-mask-image: url(data:image/png;base64,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); mask-image: url(data:image/png;base64,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); }
+.ic-gear { -webkit-mask-image: url(data:image/png;base64,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); mask-image: url(data:image/png;base64,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); }
+.ic-comment { -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Cpath%20d='M5%203h14a3%203%200%200%201%203%203v9a3%203%200%200%201-3%203h-7l-5%204v-4H5a3%203%200%200%201-3-3V6a3%203%200%200%201%203-3z'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%3E%3Cpath%20d='M5%203h14a3%203%200%200%201%203%203v9a3%203%200%200%201-3%203h-7l-5%204v-4H5a3%203%200%200%201-3-3V6a3%203%200%200%201%203-3z'/%3E%3C/svg%3E"); }
+/* Extras da versão com Supabase */
+.avatar { overflow: hidden; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.hidden { display: none !important; }
+.empty { text-align: center; color: var(--muted); padding: 28px 16px; }
+.banner { background: var(--surface-2); border: 1px dashed var(--accent); border-radius: var(--r-md); padding: 8px 14px; font-size: 13px; color: var(--muted); text-align: center; }
+body.auth-mode #app { min-height: 100vh; display: grid; place-items: center; padding: 20px; background: radial-gradient(600px 300px at 50% 0, rgba(139,123,255,.16), transparent); }
+.profile-info p { margin: 8px 0 0; }
+.post-text:empty { display: none; }
+.post-img { display: block; width: 100%; max-height: 460px; object-fit: cover; border: 1px solid var(--line); border-radius: var(--r-md); margin: 4px 0 12px; background: var(--surface-2); }
+.act.del { margin-left: auto; }
+.act.del:hover { color: var(--danger); }
+.add-img { margin-top: 12px; font-size: 14px; }
+#img-preview { position: relative; margin-top: 12px; }
+#img-preview img { width: 100%; max-height: 240px; object-fit: cover; border-radius: var(--r-md); }
+#img-preview .btn { position: absolute; top: 8px; right: 8px; padding: 5px 12px; font-size: 13px; background: rgba(13,15,20,.85); }
+.post.removing { opacity: 0; transform: scale(.98); transition: .25s var(--ease); }
+.page { max-width: 680px; margin: 0 auto; padding: 20px 16px 90px; display: grid; gap: 14px; align-content: start; }
+.ptitle { font-size: 22px; } .ptitle-row { display: flex; justify-content: space-between; align-items: center; }
+.tabs { display: flex; gap: 6px; }
+.list-item .grow { flex: 1; min-width: 0; } .list-item .grow > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list-item.link .grow { cursor: pointer; }
+.row-actions { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.row-actions .btn { margin-left: 0; padding: 6px 14px; font-size: 13px; }
+.profile-stats { flex-wrap: wrap; }
+.checks { display: grid; gap: 4px; max-height: 220px; overflow-y: auto; }
+.check { display: flex; align-items: center; gap: 10px; padding: 6px 4px; cursor: pointer; }
+.chat { max-width: 680px; margin: 0 auto; height: calc(100dvh - 62px); display: flex; flex-direction: column; padding: 0 16px; }
+.chat-head { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.chat-head .btn { padding: 6px 14px; } .chat-head b { flex: 1; font-size: 17px; }
+.msgs { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding: 14px 0; }
+.msg { max-width: 80%; padding: 8px 13px; border-radius: 16px; background: var(--surface-2); align-self: flex-start; overflow-wrap: anywhere; animation: enter .2s var(--ease) both; }
+.msg.me { align-self: flex-end; background: var(--accent); color: #12102a; }
+.msg small { display: block; font-size: 11px; color: var(--muted); }
+.chat-form { display: flex; gap: 8px; padding: 12px 0 14px; }
+.chat-host { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.msgs { min-height: 0; }
+.chan-host { display: flex; flex-direction: column; height: min(60dvh, 560px); padding: 0 16px; }
+.lnk { color: var(--accent); text-decoration: underline; } .msg.me .lnk { color: #12102a; }
+.btn-danger { border-color: var(--danger); color: var(--danger); } .btn-danger:hover { background: var(--danger); color: #12102a; border-color: var(--danger); }
+.callbar { position: fixed; left: 12px; right: 12px; bottom: 12px; max-width: 520px; margin: 0 auto; z-index: 60; display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--accent); border-radius: var(--r-lg); box-shadow: 0 10px 30px rgba(0,0,0,.5); animation: enter .25s var(--ease); }
+.callbar span { flex: 1; font-weight: 600; } .callbar .btn { padding: 7px 14px; }
+.comm-head { display: flex; gap: 14px; align-items: center; } .comm-head h2 { font-size: 20px; } .comm-head p { margin: 2px 0 0; }
+.avatar.md { width: 56px; height: 56px; font-size: 18px; }
+.chans { flex-wrap: wrap; }
+.role { border: 1px solid var(--line); border-radius: var(--r-md); padding: 12px; margin: 10px 0; display: grid; gap: 10px; }
+.role-top, .add-row { display: flex; gap: 8px; } .add-row { margin-top: 10px; }
+input[type=color] { width: 46px; height: 46px; flex: none; padding: 3px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-sm); }
+.sel { width: auto; padding: 6px 10px; }
+.cfg h3 { margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- Diálogo: nova publicação -->
+<dialog id="composer-dialog"><form method="dialog">
+  <h2>Nova publicação</h2>
+  <textarea class="input" maxlength="280" placeholder="O que estás a pensar?"></textarea>
+  <div id="img-preview" class="hidden"><img alt="Pré-visualização"><button type="button" class="btn" id="img-remove">Remover</button></div>
+  <label class="btn add-img" for="p-image">📷 Adicionar imagem</label><input type="file" id="p-image" accept="image/*" class="hidden">
+  <div class="dialog-actions">
+    <span class="counter">0/280</span>
+    <button class="btn" value="cancel" formnovalidate>Cancelar</button>
+    <button class="btn btn-primary" value="ok">Publicar</button>
+  </div>
+</form></dialog>
+
+<!-- Diálogo: editar perfil -->
+<dialog id="edit-dialog"><form method="dialog">
+  <h2>Editar perfil</h2>
+  <div class="field" id="avatar-field"><label for="e-avatar">Foto de perfil</label><input class="input" id="e-avatar" type="file" accept="image/*"></div>
+  <div class="field"><label for="e-name">Nome de apresentação</label><input class="input" id="e-name" maxlength="40"></div>
+  <div class="field"><label for="e-bio">Biografia</label><textarea class="input" id="e-bio" maxlength="160"></textarea></div>
+  <div class="field"><label for="e-bcolor">Banner: cor sólida</label><input type="color" id="e-bcolor" value="#26215a"></div>
+  <div class="field"><label for="e-banner">Banner: imagem</label><input class="input" id="e-banner" type="file" accept="image/*"></div>
+  <label class="check"><input type="checkbox" id="e-bclear"><span>Repor banner padrão</span></label>
+  <div class="field" style="margin-top:12px"><label for="e-frame">Moldura do avatar</label><select class="input" id="e-frame"></select></div>
+  <div class="field"><label for="e-fx">Efeito do perfil</label><select class="input" id="e-fx"></select></div>
+  <div class="dialog-actions"><button class="btn" value="cancel" formnovalidate>Cancelar</button><button class="btn btn-primary" value="ok">Guardar</button></div>
+</form></dialog>
+
+<!-- Diálogo: código de recuperação (mostrado uma só vez) -->
+<dialog id="recovery-dialog"><form method="dialog">
+  <h2>Guarda o teu código de recuperação</h2>
+  <p class="muted">O InLog não usa email. Se esqueceres a palavra-passe, <b>este código é a única forma de recuperar a tua conta</b>. Ele só aparece agora.</p>
+  <div class="codebox" id="rc-code"></div>
+  <div class="row-actions" style="justify-content:flex-start"><button type="button" class="btn btn-primary" id="rc-copy">Copiar</button><button type="button" class="btn" id="rc-save">Descarregar .txt</button></div>
+  <ul class="tips">
+    <li>Guarda-o num sítio onde te lembres: notas do telemóvel, gestor de palavras-passe ou escrito num papel.</li>
+    <li><b>Dica:</b> toca em <b>Copiar</b> e fixa o código na área de transferência do teclado (mantém premido o item copiado e toca em <b>Fixar</b>; depende do teclado).</li>
+    <li>Não partilhes o código com ninguém: quem o tiver pode mudar a tua palavra-passe.</li>
+    <li>Perdeste-o? Em Definições podes gerar um novo (o antigo deixa de funcionar).</li>
+  </ul>
+  <label class="check"><input type="checkbox" id="rc-ok"><span>Guardei o código num lugar seguro</span></label>
+  <div class="dialog-actions"><button class="btn btn-primary" value="ok" id="rc-done" disabled>Continuar</button></div>
+</form></dialog>
+
+<!-- Diálogo: novo grupo -->
+<dialog id="group-dialog"><form method="dialog">
+  <h2>Novo grupo</h2>
+  <div class="field"><label for="g-name">Nome do grupo</label><input class="input" id="g-name" maxlength="40"></div>
+  <div class="field"><label>Membros (os teus amigos)</label><div id="g-members" class="checks"></div></div>
+  <div class="dialog-actions"><button class="btn" value="cancel" formnovalidate>Cancelar</button><button class="btn btn-primary" value="ok">Criar</button></div>
+</form></dialog>
+
+<!-- Diálogo: nova comunidade -->
+<dialog id="comm-dialog"><form method="dialog">
+  <h2>Nova comunidade</h2>
+  <div class="field"><label for="cm-name">Nome</label><input class="input" id="cm-name" maxlength="40"></div>
+  <div class="field"><label for="cm-desc">Descrição</label><textarea class="input" id="cm-desc" maxlength="200" style="min-height:80px"></textarea></div>
+  <label class="check"><input type="checkbox" id="cm-private"><span>Privada (só entra quem tiver convite)</span></label>
+  <div class="dialog-actions"><button class="btn" value="cancel" formnovalidate>Cancelar</button><button class="btn btn-primary" value="ok">Criar</button></div>
+</form></dialog>
+
+<!-- Diálogo: convidar para a comunidade -->
+<dialog id="invite-dialog"><form method="dialog">
+  <h2>Convidar para a comunidade</h2>
+  <div class="field"><label>Link de convite</label><div style="display:flex;gap:8px"><input class="input" id="inv-link" readonly><button type="button" class="btn btn-primary" id="inv-copy">Copiar</button></div></div>
+  <h3 style="margin-bottom:6px">Convidar amigos</h3><div id="inv-friends"></div>
+  <div class="dialog-actions"><button class="btn" value="cancel" formnovalidate>Fechar</button></div>
+</form></dialog>
+
+<!-- Diálogo: apagar conta -->
+<dialog id="delete-dialog"><form method="dialog">
+  <h2>Apagar conta</h2>
+  <p class="muted">Isto apaga para sempre o teu perfil, publicações, mensagens e as comunidades que criaste. Não dá para desfazer.</p>
+  <div class="field"><label for="d-confirm">Escreve o teu nome de utilizador para confirmar</label><input class="input" id="d-confirm" autocomplete="off"></div>
+  <div class="dialog-actions"><button class="btn" value="cancel" formnovalidate>Cancelar</button><button class="btn btn-danger" value="ok">Apagar para sempre</button></div>
+</form></dialog>
+
+<!-- Chamadas de voz: barra durante a chamada, aviso de chamada recebida e áudio remoto -->
+<div class="callbar hidden" id="call-ui"><i class="ic ic-phone"></i><span id="call-text"></span><button class="btn" id="call-mute" aria-label="Silenciar">🎤</button><button class="btn btn-danger" id="call-end">Desligar</button></div>
+<div class="callbar hidden" id="incoming"><i class="ic ic-phone"></i><span id="inc-text"></span><button class="btn btn-primary" id="inc-yes">Atender</button><button class="btn" id="inc-no">Recusar</button></div>
+<audio id="remote-audio" autoplay></audio>
+
+<div class="toast" id="toast"></div>
+
+<!-- Biblioteca do Supabase (versão fixa, via CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.1/dist/umd/supabase.js"></script>
+<!-- Plano B: se a biblioteca acima não carregar, usa uma versão mais antiga -->
+<script>window.supabase || document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"><\/script>');</script>
+<script>
+/* Se algo falhar ao carregar, mostra o erro no ecrã em vez de ficar tudo preto */
+function showFatal(msg) {
+  const app = document.getElementById("app");
+  if (app && !app.innerHTML.trim()) {
+    app.innerHTML = '<main class="card auth-card"><h1>Erro ao carregar</h1><p class="sub muted" id="fatal"></p></main>';
+    document.body.classList.add("auth-mode");
+    document.getElementById("fatal").textContent = msg || "Erro desconhecido";
+  }
+}
+window.addEventListener("error", (e) => showFatal(e.message));
+window.addEventListener("unhandledrejection", (e) => showFatal(e.reason && e.reason.message));
+
+/* ==========================================================
+   InLog — ficheiro único (HTML + CSS + JS)
+   1. Configuração   2. Utilitários   3. Camada de dados (api)
+   4. Componentes    5. Vistas        6. Router e arranque
+   ========================================================== */
+
+/* ---------- 1. CONFIGURAÇÃO ----------
+   Preenche as duas linhas abaixo com o URL e a chave "anon/public" do teu projeto Supabase
+   (Project Settings → API Keys). A chave publishable (sb_publishable_...) é feita para ser pública;
+   a segurança vem das regras RLS do ficheiro supabase.sql.
+   Enquanto estiverem vazias, a app mostra um ecrã de configuração. */
+const SUPABASE_URL = "https://qqsyjrjrqkmfynmaudfo.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_aCtA-XL_1p2DLPW05-fz7A_YK_gx7-m";
+const CONFIGURED = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+
+/* Chamadas de voz — servidor TURN próprio (Coturn).
+   Depois de instalar o Coturn na tua VPS (script coturn-setup.sh), preenche as 3 linhas abaixo. */
+const COTURN = { host: "", user: "", pass: "" };   // ex.: host "203.0.113.10" (IP ou domínio da VPS)
+const TURN_SERVERS = COTURN.host ? [{ urls: [`turn:${COTURN.host}:3478?transport=udp`, `turn:${COTURN.host}:3478?transport=tcp`], username: COTURN.user, credential: COTURN.pass }] : [];
+const sb = CONFIGURED ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+/* ---------- 2. UTILITÁRIOS ---------- */
+/* Tema: modo (escuro/claro/sistema), cor de destaque e animações — guardado neste aparelho */
+function applyTheme() {
+  const mode = localStorage.getItem("inlog_theme") || "dark", accent = localStorage.getItem("inlog_accent") || "#8b7bff";
+  const dark = mode === "dark" || (mode === "auto" && matchMedia("(prefers-color-scheme: dark)").matches), root = document.documentElement;
+  root.dataset.theme = dark ? "dark" : "light"; root.style.setProperty("--accent", accent);
+  root.classList.toggle("reduce", !!localStorage.getItem("inlog_reduce"));
+  const meta = document.getElementById("meta-theme"); if (meta) meta.content = dark ? "#0d0f14" : "#f4f5fa";
+}
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
+
+const FRAMES = [["", "Nenhuma"], ["gold", "Ouro"], ["neon", "Neon"], ["rainbow", "Arco-íris"], ["fire", "Fogo"], ["ice", "Gelo"], ["rose", "Rosa"]];
+const EFFECTS = [["", "Nenhum"], ["stars", "Estrelas"], ["snow", "Neve"], ["embers", "Brasas"], ["confetti", "Confetes"], ["rain", "Chuva"]];
+
+/* Pinta o banner (cor sólida ou imagem) e o efeito animado por cima */
+function paintCover(el, p) {
+  if (!el) return;
+  const url = p.banner_url ? String(p.banner_url).replace(/"/g, "%22") : "";
+  el.style.background = url ? `center / cover no-repeat url("${url}")` : /^#[0-9a-f]{6}$/i.test(p.banner_color || "") ? p.banner_color : "";
+  el.querySelectorAll(".fx-layer").forEach((x) => x.remove());
+  if (!p.profile_effect || !EFFECTS.some(([k]) => k === p.profile_effect)) return;
+  const layer = html(`<div class="fx-layer fx-${p.profile_effect}"></div>`), colors = ["#ff4d6d", "#ffd24d", "#4dff88", "#4dd2ff", "#b04dff"];
+  for (let i = 0; i < 22; i++) {
+    const sp = document.createElement("span"), r = Math.random;
+    sp.style.cssText = `--x:${(r() * 100).toFixed(0)}%;--y:${(r() * 90).toFixed(0)}%;--s:${(3 + r() * 5).toFixed(0)}px;--d:${(3 + r() * 4).toFixed(1)}s;--dl:${(-r() * 6).toFixed(1)}s;--c:${colors[i % 5]}`;
+    layer.append(sp);
+  }
+  el.append(layer);
+}
+applyTheme();
+/* Service worker: permite notificações no telemóvel e abre a conversa ao tocar nelas */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+  navigator.serviceWorker.addEventListener("message", (e) => { if (e.data && e.data.hash) location.hash = e.data.hash; });
+}
+const $ = (s, r = document) => r.querySelector(s);
+const initials = (n = "?") => n.split(/[\s._]+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+const html = (s) => { const t = document.createElement("template"); t.innerHTML = s.trim(); return t.content.firstElementChild; };
+
+let toastTimer;
+function toast(msg) {
+  const el = $("#toast"); el.textContent = msg; el.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+/* "há 5 min", "há 2 h"... */
+function timeAgo(iso) {
+  const s = Math.max(0, (Date.now() - new Date(iso)) / 1000);
+  if (s < 60) return "agora";
+  if (s < 3600) return `há ${Math.floor(s / 60)} min`;
+  if (s < 86400) return `há ${Math.floor(s / 3600)} h`;
+  return new Date(iso).toLocaleDateString("pt-PT", { day: "numeric", month: "short" });
+}
+
+/* Reduz a imagem (máx. 1600 px, JPEG) para poupar espaço e acelerar o envio */
+function resizeImage(file, max = 1600) {
+  return new Promise((resolve, reject) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      c.toBlob((b) => (b ? resolve(b) : reject(new Error("Imagem inválida."))), "image/jpeg", 0.85);
+    };
+    img.onerror = () => reject(new Error("Não foi possível ler a imagem."));
+    img.src = url;
+  });
+}
+
+/* Executa uma ação e mostra o erro num aviso em vez de partir a app */
+async function safe(fn) { try { return await fn(); } catch (e) { toast(/row-level security/i.test(e.message || "") ? "Não tens permissão para fazer isto." : e.message || "Algo correu mal."); } }
+
+/* ---------- 3. CAMADA DE DADOS ----------
+   Toda a comunicação com o Supabase passa por este objeto `api`. */
+const liveApi = {
+  async me() { const { data } = await sb.auth.getSession(); return data.session?.user || null; },
+  async signIn(email, password) { const { error } = await sb.auth.signInWithPassword({ email, password }); if (error) throw error; },
+  async signUp(username, email, password) {
+    // O trigger do supabase.sql cria a linha em `profiles` com este username
+    const { data, error } = await sb.auth.signUp({ email, password, options: { data: { username }, emailRedirectTo: location.origin + location.pathname } });
+    if (error) throw error;
+    return { needsConfirm: !data.session };
+  },
+  async signOut() { await sb.auth.signOut(); },
+  async profile(id) { const { data, error } = await sb.from("profiles").select("*").eq("id", id).single(); if (error) throw error; return data; },
+  async updateProfile(id, fields, file, bannerFile) {
+    if (bannerFile) { // banner → bucket "banners"
+      const path = `${id}/banner`, up = await sb.storage.from("banners").upload(path, await resizeImage(bannerFile, 1400), { upsert: true, contentType: "image/jpeg" });
+      if (up.error) throw up.error;
+      fields.banner_url = sb.storage.from("banners").getPublicUrl(path).data.publicUrl + "?v=" + Date.now();
+    }
+    if (file) { // imagem → Supabase Storage (bucket "avatars", pasta = id do utilizador)
+      const path = `${id}/avatar`;
+      const up = await sb.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+      if (up.error) throw up.error;
+      fields.avatar_url = sb.storage.from("avatars").getPublicUrl(path).data.publicUrl + "?v=" + Date.now();
+    }
+    const { error } = await sb.from("profiles").update(fields).eq("id", id); if (error) throw error;
+  },
+  /* ----- Código de recuperação (substitui o email) ----- */
+  async hasRecoveryCode() { const { data, error } = await sb.rpc("has_recovery_code"); if (error) throw error; return !!data; },
+  async generateRecoveryCode() { const { data, error } = await sb.rpc("generate_recovery_code"); if (error) throw error; return data; },
+  async resetWithCode(username, code, password) { const { data, error } = await sb.rpc("reset_password_with_code", { p_username: username, p_code: code, p_new_password: password }); if (error) throw error; return data; },
+  async comments(postId) { const { data, error } = await sb.from("comments").select("id,user_id,content,created_at,profiles(username,display_name,avatar_url,avatar_frame)").eq("post_id", postId).order("created_at").limit(100); if (error) throw error; return data; },
+  async addComment(postId, text) { const { error } = await sb.from("comments").insert({ post_id: postId, content: text }); if (error) throw error; },
+  async deleteComment(id) { const { error } = await sb.from("comments").delete().eq("id", id); if (error) throw error; },
+  async posts(myId, userId, opts = {}) {
+    let q = sb.from("posts").select("id,content,created_at,user_id,image_url,profiles!posts_user_id_fkey(username,display_name,avatar_url,avatar_frame),likes(user_id),comments(count)").order("created_at", { ascending: false }).limit(50);
+    if (userId) q = q.eq("user_id", userId);
+    if (opts.communityId) q = q.eq("community_id", opts.communityId); else q = q.is("community_id", null);
+    if (opts.following) { // só quem eu sigo (e eu)
+      const { data: f } = await sb.from("follows").select("following_id").eq("follower_id", myId);
+      q = q.in("user_id", (f || []).map((x) => x.following_id).concat(myId));
+    }
+    const { data, error } = await q; if (error) throw error;
+    return data.map((r) => ({ id: r.id, userId: r.user_id, text: r.content, image: r.image_url, time: r.created_at, name: r.profiles.display_name || r.profiles.username, username: r.profiles.username, avatar: r.profiles.avatar_url, frame: r.profiles.avatar_frame, likes: r.likes.length, comments: ((r.comments || [])[0] || {}).count || 0, liked: r.likes.some((l) => l.user_id === myId) }));
+  },
+  async createPost(text, file, communityId) {
+    const { data: ses } = await sb.auth.getSession(); const uid = ses.session.user.id; let image_url = null;
+    if (file) { // imagem → Storage (bucket "post-images", pasta = id do utilizador)
+      const blob = await resizeImage(file), path = `${uid}/${Date.now()}.jpg`;
+      const up = await sb.storage.from("post-images").upload(path, blob, { contentType: "image/jpeg" }); if (up.error) throw up.error;
+      image_url = sb.storage.from("post-images").getPublicUrl(path).data.publicUrl;
+    }
+    const { error } = await sb.from("posts").insert({ content: text, image_url, community_id: communityId || null }); if (error) throw error;
+  },
+  async deletePost(p) {
+    const { error } = await sb.from("posts").delete().eq("id", p.id); if (error) throw error;
+    if (p.image) await sb.storage.from("post-images").remove([decodeURIComponent(p.image.split("/post-images/")[1])]);
+  },
+  async toggleLike(post, myId) {
+    const q = sb.from("likes");
+    const { error } = post.liked ? await q.delete().match({ post_id: post.id, user_id: myId }) : await q.insert({ post_id: post.id });
+    if (error) throw error;
+  },
+  async suggestions(myId) { const { data } = await sb.from("profiles").select("id,username,display_name,avatar_url,avatar_frame").neq("id", myId).limit(3); return data || []; },
+
+  /* ----- Perfis, seguir e amizades ----- */
+  async profileByUsername(u) { const { data } = await sb.from("profiles").select("*").eq("username", u).maybeSingle(); return data; },
+  async searchProfiles(q, myId) {
+    const t = q.replace(/[%,()]/g, "");
+    const { data, error } = await sb.from("profiles").select("id,username,display_name,avatar_url,avatar_frame").or(`username.ilike.%${t}%,display_name.ilike.%${t}%`).neq("id", myId).limit(20);
+    if (error) throw error; return data;
+  },
+  async isFollowing(myId, id) { const { data } = await sb.from("follows").select("follower_id").match({ follower_id: myId, following_id: id }).maybeSingle(); return !!data; },
+  async follow(id) { const { error } = await sb.from("follows").insert({ following_id: id }); if (error) throw error; },
+  async unfollow(myId, id) { const { error } = await sb.from("follows").delete().match({ follower_id: myId, following_id: id }); if (error) throw error; },
+  async stats(id) {
+    const head = { count: "exact", head: true }, c = (q) => q.then((r) => r.count || 0);
+    const [posts, followers, following, friends] = await Promise.all([
+      c(sb.from("posts").select("id", head).eq("user_id", id).is("community_id", null)),
+      c(sb.from("follows").select("follower_id", head).eq("following_id", id)),
+      c(sb.from("follows").select("follower_id", head).eq("follower_id", id)),
+      c(sb.from("friendships").select("id", head).eq("status", "accepted").or(`requester_id.eq.${id},addressee_id.eq.${id}`)),
+    ]);
+    return { posts, followers, following, friends };
+  },
+  async friendship(a, b) { const { data } = await sb.from("friendships").select("*").or(`and(requester_id.eq.${a},addressee_id.eq.${b}),and(requester_id.eq.${b},addressee_id.eq.${a})`).maybeSingle(); return data; },
+  async sendRequest(id) { const { error } = await sb.from("friendships").insert({ addressee_id: id }); if (error) throw error; },
+  async acceptRequest(fid) { const { error } = await sb.from("friendships").update({ status: "accepted" }).eq("id", fid); if (error) throw error; },
+  async deleteFriendship(fid) { const { error } = await sb.from("friendships").delete().eq("id", fid); if (error) throw error; },
+  async friends(myId) {
+    const P = "id,username,display_name,avatar_url,avatar_frame";
+    const { data, error } = await sb.from("friendships").select(`id,status,requester_id,addressee_id,requester:profiles!friendships_requester_id_fkey(${P}),addressee:profiles!friendships_addressee_id_fkey(${P})`).or(`requester_id.eq.${myId},addressee_id.eq.${myId}`);
+    if (error) throw error;
+    return data.map((r) => ({ fid: r.id, status: r.status, incoming: r.addressee_id === myId, other: r.requester_id === myId ? r.addressee : r.requester }));
+  },
+
+  /* ----- Conversas privadas e grupos ----- */
+  async conversations(myId) {
+    const { data, error } = await sb.from("conversation_members").select("conversations(id,type,name,last_message_at)").eq("user_id", myId);
+    if (error) throw error;
+    const convs = data.map((r) => r.conversations).sort((a, b) => new Date(b.last_message_at) - new Date(a.last_message_at));
+    if (!convs.length) return [];
+    const { data: mem } = await sb.from("conversation_members").select("conversation_id,profiles(id,username,display_name,avatar_url,avatar_frame)").in("conversation_id", convs.map((c) => c.id));
+    return convs.map((c) => ({ ...c, members: mem.filter((m) => m.conversation_id === c.id).map((m) => m.profiles) }));
+  },
+  async conversation(id, myId) { return (await liveApi.conversations(myId)).find((c) => String(c.id) === String(id)); },
+  async startDM(other) { const { data, error } = await sb.rpc("start_dm", { other }); if (error) throw error; return data; },
+  async createGroup(name, ids) { const { data, error } = await sb.rpc("create_group", { group_name: name, member_ids: ids }); if (error) throw error; return data; },
+  async leaveConversation(id, myId) { const { error } = await sb.from("conversation_members").delete().match({ conversation_id: id, user_id: myId }); if (error) throw error; },
+  async messages(id) { const { data, error } = await sb.from("messages").select("id,sender_id,content,created_at").eq("conversation_id", id).order("created_at").limit(200); if (error) throw error; return data; },
+  async sendMessage(id, text) { const { error } = await sb.from("messages").insert({ conversation_id: id, content: text }); if (error) throw error; },
+
+  /* ----- Comunidades, canais, cargos e convites ----- */
+  async communities() { const { data, error } = await sb.from("communities").select("id,name,description,icon_url,is_private,community_members(user_id)").order("created_at", { ascending: false }); if (error) throw error; return data; },
+  async community(id) { const { data } = await sb.from("communities").select("id,name,description,icon_url,is_private,created_by,community_members(user_id,role_id),community_roles(*),community_channels(id,name)").eq("id", id).maybeSingle(); return data; },
+  async communityMembers(id) { const { data, error } = await sb.from("community_members").select("user_id,role_id,profiles(id,username,display_name,avatar_url,avatar_frame)").eq("community_id", id); if (error) throw error; return data; },
+  async createCommunity(name, description, priv) { const { data, error } = await sb.rpc("create_community", { c_name: name, c_desc: description, c_private: priv }); if (error) throw error; return data; },
+  async joinCommunity(id) { const { error } = await sb.rpc("join_community", { cid: id }); if (error) throw error; },
+  async joinByInvite(code) { const { data, error } = await sb.rpc("join_by_invite", { invite_code: code }); if (error) throw error; return data; },
+  async leaveCommunity(id, myId) { const { error } = await sb.from("community_members").delete().match({ community_id: id, user_id: myId }); if (error) throw error; },
+  async updateCommunity(id, fields, file) {
+    if (file) { // foto da comunidade → bucket "community-icons"
+      const path = `${id}/icon`, up = await sb.storage.from("community-icons").upload(path, await resizeImage(file, 512), { upsert: true, contentType: "image/jpeg" });
+      if (up.error) throw up.error;
+      fields.icon_url = sb.storage.from("community-icons").getPublicUrl(path).data.publicUrl + "?v=" + Date.now();
+    }
+    const { error } = await sb.from("communities").update(fields).eq("id", id); if (error) throw error;
+  },
+  async deleteCommunity(id) { const { error } = await sb.from("communities").delete().eq("id", id); if (error) throw error; },
+  async addChannel(cid, name) { const { error } = await sb.from("community_channels").insert({ community_id: cid, name }); if (error) throw error; },
+  async renameChannel(id, name) { const { error } = await sb.from("community_channels").update({ name }).eq("id", id); if (error) throw error; },
+  async deleteChannel(id) { const { error } = await sb.from("community_channels").delete().eq("id", id); if (error) throw error; },
+  async addRole(cid) { const { error } = await sb.from("community_roles").insert({ community_id: cid, name: "Novo cargo" }); if (error) throw error; },
+  async updateRole(id, f) { const { error } = await sb.from("community_roles").update(f).eq("id", id); if (error) throw error; },
+  async deleteRole(id) { const { error } = await sb.from("community_roles").delete().eq("id", id); if (error) throw error; },
+  async setMemberRole(cid, uid, roleId) { const { error } = await sb.from("community_members").update({ role_id: roleId }).match({ community_id: cid, user_id: uid }); if (error) throw error; },
+  async getInvite(cid) {   // reutiliza o link existente ou cria um novo
+    let { data } = await sb.from("community_invites").select("code").eq("community_id", cid).limit(1).maybeSingle();
+    if (!data) { const r = await sb.from("community_invites").insert({ community_id: cid }).select("code").single(); if (r.error) throw r.error; data = r.data; }
+    return data.code;
+  },
+  async channelMessages(id) { const { data, error } = await sb.from("channel_messages").select("id,sender_id,content,created_at").eq("channel_id", id).order("created_at").limit(200); if (error) throw error; return data; },
+  async sendChannelMessage(id, text) { const { error } = await sb.from("channel_messages").insert({ channel_id: id, content: text }); if (error) throw error; },
+
+  /* ----- Conta ----- */
+  async deleteAccount(uid) {
+    for (const b of ["avatars", "post-images"]) {   // apaga primeiro as imagens da pessoa
+      const { data } = await sb.storage.from(b).list(uid);
+      if (data?.length) await sb.storage.from(b).remove(data.map((f) => `${uid}/${f.name}`));
+    }
+    const { error } = await sb.rpc("delete_my_account"); if (error) throw error;
+  },
+};
+
+const api = liveApi;
+
+/* ---------- 4. COMPONENTES ---------- */
+const LOGO = `<svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#8b7bff"/><path d="M10 9v14M16 9v14M22 16h-6" stroke="#12102a" stroke-width="3" stroke-linecap="round"/></svg>`;
+
+/* Avatar: foto (Storage) ou iniciais */
+function avatar(name, url, cls = "", frame = "") {
+  const d = html(`<div class="avatar ${cls}"></div>`);
+  if (FRAMES.some(([k]) => k && k === frame)) d.dataset.frame = frame;   // moldura
+  if (url) { const i = new Image(); i.src = url; i.alt = ""; d.appendChild(i); } else d.textContent = initials(name);
+  return d;
+}
+
+/* Publicação. Texto de utilizadores entra sempre com textContent (anti-XSS) */
+/* Fio de respostas de uma publicação (estilo Twitter). Guarda as abertas para atualizar em tempo real */
+const openThreads = new Set();
+function threadEl(p, myId, onCount) {
+  const el = html('<div class="thread"><div class="thread-list"></div><form class="thread-form"><input class="input" maxlength="280" placeholder="Escreve a tua resposta…"><button class="btn btn-primary">Responder</button></form></div>');
+  const list = $(".thread-list", el);
+  const refresh = async () => {
+    if (!el.isConnected) return openThreads.delete(refresh);
+    const rows = (await safe(() => api.comments(p.id))) || []; list.replaceChildren(); onCount(rows.length);
+    if (!rows.length) list.append(note("Ainda sem respostas."));
+    rows.forEach((c) => {
+      const pr = c.profiles || {}, name = pr.display_name || pr.username || "?";
+      const r = html('<div class="reply"><div class="grow"><div class="post-head"><b></b><span class="muted"></span></div><p class="post-text"></p></div></div>');
+      r.prepend(avatar(name, pr.avatar_url, "sm", pr.avatar_frame));
+      $("b", r).textContent = name; $("b", r).style.cursor = "pointer"; $("b", r).onclick = () => (location.hash = "#/u/" + pr.username);
+      $(".muted", r).textContent = `@${pr.username} · ${timeAgo(c.created_at)}`; $(".post-text", r).textContent = c.content;
+      if (c.user_id === myId || p.userId === myId) {   // o autor da resposta e o da publicação podem apagar
+        const d = html('<button class="act" aria-label="Apagar resposta"><i class="ic ic-trash"></i></button>');
+        d.onclick = async () => { if (confirm("Apagar esta resposta?")) { await safe(() => api.deleteComment(c.id)); refresh(); } };
+        r.append(d);
+      }
+      list.append(r);
+    });
+  };
+  $("form", el).onsubmit = async (e) => {
+    e.preventDefault(); const inp = $("input", el), t = inp.value.trim(); if (!t) return;
+    inp.value = ""; await safe(() => api.addComment(p.id, t)); refresh();
+  };
+  return { el, refresh };
+}
+
+function postEl(p, myId) {
+  const el = html(`<article class="card post"><div class="post-body">
+    <div class="post-head"><b></b><span class="muted"></span></div><p class="post-text"></p><img class="post-img hidden" alt="" loading="lazy">
+    <div class="actions"><button class="act like"><i class="ic ic-heart heart"></i> <span class="n"></span></button><button class="act cmt" aria-label="Responder"><i class="ic ic-comment"></i> <span class="cn"></span></button><button class="act del hidden" aria-label="Apagar publicação"><i class="ic ic-trash"></i> Apagar</button></div></div></article>`);
+  el.prepend(avatar(p.name, p.avatar, "", p.frame));
+  $("b", el).textContent = p.name; $("b", el).style.cursor = "pointer"; $("b", el).onclick = () => (location.hash = "#/u/" + p.username);
+  $(".muted", el).textContent = `@${p.username} · ${timeAgo(p.time)}`;
+  $(".post-text", el).textContent = p.text;
+  if (p.image) { const im = $(".post-img", el); im.src = p.image; im.classList.remove("hidden"); }
+  // Só o autor vê o botão Apagar (a base de dados também o garante, via RLS)
+  if (p.userId === myId) {
+    const del = $(".del", el); del.classList.remove("hidden");
+    del.addEventListener("click", async () => {
+      if (!confirm("Apagar esta publicação? Não dá para desfazer.")) return;
+      const ok = await safe(async () => { await api.deletePost(p); return true; });
+      if (!ok) return;
+      el.classList.add("removing"); toast("Publicação apagada");
+      setTimeout(() => afterPublish(), 250);
+    });
+  }
+  // Botão Responder: abre/fecha o fio de respostas
+  const cbtn = $(".cmt", el), setCount = (n) => { p.comments = n; $(".cn", cbtn).textContent = n || ""; }; setCount(p.comments || 0);
+  let thread = null;
+  cbtn.addEventListener("click", () => {
+    if (thread) { openThreads.delete(thread.refresh); thread.el.remove(); thread = null; cbtn.classList.remove("on"); return; }
+    thread = threadEl(p, myId, setCount); $(".post-body", el).append(thread.el); openThreads.add(thread.refresh); cbtn.classList.add("on");
+    thread.refresh(); $("input", thread.el).focus();
+  });
+  const btn = $(".like", el), paint = () => { btn.classList.toggle("liked", p.liked); $(".n", btn).textContent = p.likes; };
+  paint();
+  btn.addEventListener("click", async () => {
+    const ok = await safe(async () => { await api.toggleLike(p, myId); return true; });
+    if (!ok) return;
+    p.liked = !p.liked; p.likes += p.liked ? 1 : -1; paint();   // atualização visual imediata
+  });
+  return el;
+}
+
+function headerHTML(page) {
+  const a = (h, t, k) => `<a href="${h}" class="${page === k ? "active" : ""}">${t}</a>`;
+  return `<header class="header"><div class="header-in">
+    <a href="#/" class="logo">${LOGO}<span>InLog</span></a>
+    <button class="burger" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    <nav class="nav">${a("#/", "Início", "home")}${a("#/amigos", "Amigos", "amigos")}${a("#/mensagens", "Mensagens", "mensagens")}${a("#/comunidades", "Comunidades", "comunidades")}${a("#/perfil", "Perfil", "perfil")}<a href="#" id="logout">Sair</a>
+    <a href="#" class="btn btn-primary" data-open-composer>Publicar</a></nav>
+    <a href="#/definicoes" class="hdr-gear${page === "definicoes" ? " active" : ""}" aria-label="Definições"><i class="ic ic-gear"></i></a></div></header>`;
+}
+
+/* Monta uma página com header; liga menu móvel e botão Sair */
+function mountPage(page, mainHTML, fab = true) {
+  document.body.classList.remove("auth-mode");
+  const app = $("#app"); app.innerHTML = headerHTML(page) + mainHTML + (fab ? `<button class="fab" data-open-composer aria-label="Nova publicação">+</button>` : "");
+  const burger = $(".burger"), nav = $(".nav");
+  burger.onclick = () => burger.setAttribute("aria-expanded", nav.classList.toggle("open"));
+  $("#logout").onclick = async (e) => { e.preventDefault(); stopListeners(); await safe(() => api.signOut()); location.hash = "#/login"; };
+}
+
+/* Diálogo de publicar: a vista atual define o que fazer depois de publicar */
+let afterPublish = () => {};
+let composerCommunity = null;   // preenchido quando se publica dentro de uma comunidade
+(function wireComposer() {
+  const dlg = $("#composer-dialog"), ta = $("textarea", dlg), fileIn = $("#p-image"), prev = $("#img-preview");
+  let file = null;
+  const clearImg = () => { file = null; fileIn.value = ""; prev.classList.add("hidden"); };
+  ta.addEventListener("input", () => ($(".counter", dlg).textContent = `${ta.value.length}/280`));
+  fileIn.addEventListener("change", () => {
+    const f = fileIn.files[0]; if (!f) return;
+    if (!f.type.startsWith("image/")) return toast("Escolhe um ficheiro de imagem.");
+    file = f; $("img", prev).src = URL.createObjectURL(f); prev.classList.remove("hidden");
+  });
+  $("#img-remove").onclick = clearImg;
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("[data-open-composer]")) { e.preventDefault(); $(".nav")?.classList.remove("open"); dlg.showModal(); ta.focus(); }
+  });
+  $("form", dlg).addEventListener("submit", async (e) => {
+    if (e.submitter?.value !== "ok") return;
+    const text = ta.value.trim();
+    if (!text && !file) { e.preventDefault(); return toast("Escreve algo ou adiciona uma imagem."); }
+    toast("A publicar…");
+    const ok = await safe(async () => { await api.createPost(text, file, composerCommunity); return true; });
+    if (ok) { ta.value = ""; $(".counter", dlg).textContent = "0/280"; clearImg(); toast("Publicado"); afterPublish(); }
+  });
+})();
+
+/* ---------- 5. VISTAS ---------- */
+async function viewFeed() {
+  const me = await api.me(), prof = await api.profile(me.id);
+  mountPage("home", `<main class="layout">
+    <aside class="side side-left"><div class="card user-card" id="user-card"></div></aside>
+    <section class="feed">
+      <div class="tabs"><button class="btn btn-primary" data-t="all">Todos</button><button class="btn" data-t="following">A seguir</button></div>
+      <button class="card composer" data-open-composer><span id="me-av"></span>O que estás a pensar?</button>
+      <div id="feed" class="feed"></div></section>
+    <aside class="side side-right"><div class="card" id="suggestions"><h3>Pessoas a seguir</h3></div></aside></main>`);
+
+  const card = $("#user-card");
+  card.append(avatar(prof.display_name || prof.username, prof.avatar_url, "", prof.avatar_frame), html("<h3></h3>"), html('<div class="muted"></div>'));
+  $("h3", card).textContent = prof.display_name || prof.username; $(".muted", card).textContent = "@" + prof.username;
+  $("#me-av").replaceWith(avatar(prof.display_name || prof.username, prof.avatar_url, "", prof.avatar_frame));
+
+  let tab = "all";
+  const load = async () => {
+    const posts = await safe(() => api.posts(me.id, null, { following: tab === "following" })) || [], feed = $("#feed"); feed.replaceChildren();
+    if (!posts.length) feed.append(html('<div class="card empty">Ainda não há publicações. Escreve a primeira!</div>'));
+    posts.forEach((p) => feed.append(postEl(p, me.id)));
+  };
+  afterPublish = load; onLive = load; load();
+  document.querySelectorAll(".tabs [data-t]").forEach((b) => (b.onclick = () => {
+    tab = b.dataset.t; document.querySelectorAll(".tabs [data-t]").forEach((x) => x.classList.toggle("btn-primary", x === b)); load();
+  }));
+
+  const people = await api.suggestions(me.id);
+  if (!people.length) $("#suggestions").classList.add("hidden");
+  for (const s of people) {
+    const row = html(`<div class="list-item"><div><b></b><div class="muted"></div></div><button class="btn">Seguir</button></div>`);
+    row.prepend(avatar(s.display_name || s.username, s.avatar_url, "", s.avatar_frame));
+    $("b", row).textContent = s.display_name || s.username; $(".muted", row).textContent = "@" + s.username;
+    $("b", row).style.cursor = "pointer"; $("b", row).onclick = () => (location.hash = "#/u/" + s.username);
+    $(".btn", row).onclick = async (e) => {
+      const ok = await safe(async () => { await api.follow(s.id); return true; });
+      if (ok) { e.target.textContent = "A seguir ✓"; e.target.disabled = true; }
+    };
+    $("#suggestions").append(row);
+  }
+}
+
+function authView(title, sub, fields, btn, foot) {
+  document.body.classList.add("auth-mode");
+  $("#app").innerHTML = `<main class="card auth-card"><a href="#/" class="logo">${LOGO}<span>InLog</span></a>
+    <h1>${title}</h1><p class="sub muted">${sub}</p>
+    <form id="auth-form">${fields}<p class="error" id="form-error" role="alert"></p><button class="btn btn-primary btn-block">${btn}</button></form>
+    <p class="auth-foot">${foot}</p></main>`;
+  return $("#auth-form");
+}
+const field = (id, label, type = "text", ac = "") => `<div class="field"><label for="${id}">${label}</label><input class="input" id="${id}" type="${type}" autocomplete="${ac}" required></div>`;
+
+function viewLogin() {
+  const form = authView("Bem-vindo de volta", "Entra para ver o que há de novo.",
+    field("email", "Email", "email", "email") + field("password", "Palavra-passe", "password", "current-password"),
+    "Iniciar sessão", 'Ainda não tens conta? <a href="#/registo">Criar conta</a><br><a href="#/recuperar" style="font-weight:600">Esqueci a palavra-passe</a>');
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    try { await api.signIn($("#email").value.trim(), $("#password").value); location.hash = "#/"; }
+    catch (err) { $("#form-error").textContent = "Email ou palavra-passe incorretos."; }
+  };
+}
+
+function viewRecuperar() {
+  const form = authView("Recuperar conta", "Usa o código de recuperação que guardaste ao criar a conta.",
+    field("username", "Nome de utilizador", "text", "username") + field("rcode", "Código de recuperação", "text", "off") +
+    field("password", "Nova palavra-passe", "password", "new-password") + field("confirm", "Confirmar palavra-passe", "password", "new-password"),
+    "Redefinir palavra-passe", 'Lembraste-te? <a href="#/login">Iniciar sessão</a>');
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const err = $("#form-error"), pw = $("#password").value;
+    if (pw.length < 6) return (err.textContent = "A palavra-passe precisa de pelo menos 6 caracteres.");
+    if (pw !== $("#confirm").value) return (err.textContent = "As palavras-passe não coincidem.");
+    err.textContent = "";
+    try {
+      const r = await api.resetWithCode($("#username").value.trim(), $("#rcode").value, pw);
+      if (r.status === "ok") { toast("Palavra-passe alterada."); showRecoveryCode(r.new_code, () => (location.hash = "#/login")); }   // o código antigo deixa de valer: mostra o novo
+      else err.textContent = { invalid: "Utilizador ou código incorretos.", locked: "Demasiadas tentativas. Tenta de novo daqui a 15 minutos.", weak: "A palavra-passe é demasiado curta." }[r.status] || "Não foi possível redefinir.";
+    } catch (ex) { err.textContent = ex.message; }
+  };
+}
+
+function viewRegisto() {
+  const form = authView("Cria a tua conta", "Leva menos de um minuto.",
+    field("username", "Nome de utilizador", "text", "username") + field("email", "Email", "email", "email") +
+    field("password", "Palavra-passe", "password", "new-password") + field("confirm", "Confirmar palavra-passe", "password", "new-password"),
+    "Criar conta", 'Já tens conta? <a href="#/login">Iniciar sessão</a>');
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const err = $("#form-error"), pw = $("#password").value, user = $("#username").value.trim();
+    if (!/^[a-zA-Z0-9._]{3,20}$/.test(user)) return (err.textContent = "Utilizador: 3–20 caracteres (letras, números, . e _).");
+    if (pw.length < 6) return (err.textContent = "A palavra-passe precisa de pelo menos 6 caracteres.");
+    if (pw !== $("#confirm").value) return (err.textContent = "As palavras-passe não coincidem.");
+    err.textContent = "";
+    try {
+      const r = await api.signUp(user, $("#email").value.trim(), pw);
+      if (r.needsConfirm) { toast("Conta criada! Confirma o teu email para entrar."); location.hash = "#/login"; } else location.hash = "#/";
+    } catch (ex) { err.textContent = ex.message; }
+  };
+}
+
+async function viewPerfil() {
+  const me = await api.me(); let prof = await api.profile(me.id);
+  mountPage("perfil", `<main class="profile"><div class="cover" id="p-cover"></div>
+    <div class="profile-head"><span id="p-av"></span><div class="row-actions"><a class="btn" href="#/definicoes"><i class="ic ic-gear"></i> Definições</a><button class="btn" id="edit-btn">Editar perfil</button></div></div>
+    <div class="profile-info"><h1 id="p-name"></h1><div class="muted" id="p-user"></div><p id="p-bio"></p>
+    <div class="profile-stats" id="p-stats"></div></div>
+    <div id="p-posts" class="feed"></div></main>`);
+
+  const draw = () => {
+    $("#p-av").replaceChildren(avatar(prof.display_name || prof.username, prof.avatar_url, "lg", prof.avatar_frame)); paintCover($("#p-cover"), prof);
+    $("#p-name").textContent = prof.display_name || prof.username; $("#p-user").textContent = "@" + prof.username; $("#p-bio").textContent = prof.bio || "";
+  };
+  const load = async () => {
+    const posts = await safe(() => api.posts(me.id, me.id)) || [], list = $("#p-posts"); list.replaceChildren();
+    statsInto($("#p-stats"), me.id);
+    if (!posts.length) list.append(html('<div class="card empty">Ainda não publicaste nada.</div>'));
+    posts.forEach((p) => list.append(postEl(p, me.id)));
+  };
+  draw(); load(); afterPublish = load; onLive = load;
+
+  const dlg = $("#edit-dialog");
+  let bannerDirty = false;   // só grava a cor se a pessoa a mexeu
+  const fill = (sel, list) => { sel.replaceChildren(...list.map(([k, l]) => { const o = html("<option></option>"); o.value = k; o.textContent = l; return o; })); };
+  fill($("#e-frame"), FRAMES); fill($("#e-fx"), EFFECTS); $("#e-bcolor").oninput = () => (bannerDirty = true);
+  $("#edit-btn").onclick = () => { $("#e-name").value = prof.display_name || ""; $("#e-bio").value = prof.bio || ""; $("#e-avatar").value = ""; $("#e-banner").value = ""; $("#e-bclear").checked = false;
+    $("#e-bcolor").value = /^#[0-9a-f]{6}$/i.test(prof.banner_color || "") ? prof.banner_color : "#26215a"; bannerDirty = false;
+    $("#e-frame").value = prof.avatar_frame || ""; $("#e-fx").value = prof.profile_effect || ""; dlg.showModal(); };
+  dlg.querySelector("form").onsubmit = async (e) => {
+    if (e.submitter?.value !== "ok") return;
+    const file = $("#e-avatar").files[0], bfile = $("#e-banner").files[0];
+    if ((file && file.size > 2 * 1024 * 1024) || (bfile && bfile.size > 8 * 1024 * 1024)) return toast("Imagem demasiado grande (foto até 2 MB, banner até 8 MB).");
+    const ok = await safe(async () => {
+      const fields = { display_name: $("#e-name").value.trim() || prof.username, bio: $("#e-bio").value.trim(), avatar_frame: $("#e-frame").value || null, profile_effect: $("#e-fx").value || null };
+      if ($("#e-bclear").checked) { fields.banner_url = null; fields.banner_color = null; }
+      else if (bannerDirty && !bfile) fields.banner_color = $("#e-bcolor").value;
+      if (bfile) fields.banner_color = null;   // a imagem substitui a cor
+      await api.updateProfile(me.id, fields, file, bfile); return true;
+    });
+    if (ok) { prof = await api.profile(me.id); draw(); toast("Perfil atualizado"); }
+  };
+}
+
+/* ---- Código de recuperação: mostra o código uma vez, com guia para o guardar ---- */
+function showRecoveryCode(code, onDone) {
+  const dlg = $("#recovery-dialog");
+  $("#rc-code").textContent = code; $("#rc-ok").checked = false; $("#rc-done").disabled = true;
+  $("#rc-ok").onchange = (e) => ($("#rc-done").disabled = !e.target.checked);
+  $("#rc-copy").onclick = async () => { try { await navigator.clipboard.writeText(code); toast("Código copiado. Fixa-o na área de transferência."); } catch { toast("Não deu para copiar: seleciona o código e copia."); } };
+  $("#rc-save").onclick = () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([`InLog — código de recuperação\n\n${code}\n\nGuarda este ficheiro num lugar seguro. Não o partilhes.\n`], { type: "text/plain" }));
+    a.download = "inlog-codigo-recuperacao.txt"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  dlg.oncancel = (e) => e.preventDefault();   // não deixa fechar sem confirmar que guardou
+  dlg.onclose = () => { if (onDone) onDone(); };
+  dlg.showModal();
+}
+
+/* ---- Utilitários das novas vistas ---- */
+/* Linha de lista (pessoa, conversa, comunidade) com ações opcionais */
+function listRow(p, sub, href, actions = []) {
+  const name = p.display_name || p.username || p.name;
+  const el = html(`<div class="list-item"><div class="grow"><b></b><div class="muted"></div></div><div class="row-actions"></div></div>`);
+  el.prepend(avatar(name, p.avatar_url, "", p.avatar_frame));
+  $("b", el).textContent = name; $(".muted", el).textContent = sub;
+  if (href) { el.classList.add("link"); $(".grow", el).onclick = () => (location.hash = href); }
+  addActions(el, actions);
+  return el;
+}
+/* Acrescenta botões (com bloqueio durante a ação) ao .row-actions de um elemento */
+function addActions(el, actions) {
+  for (const a of actions) {
+    const b = html(`<button class="btn${a.primary ? " btn-primary" : ""}"></button>`); b.textContent = a.label; if (a.icon) b.prepend(html(`<i class="ic ic-${a.icon}"></i>`), " ");
+    b.onclick = async () => { b.disabled = true; await safe(a.fn); b.disabled = false; };
+    $(".row-actions", el).append(b);
+  }
+}
+const note = (t) => html(`<p class="muted">${t}</p>`);
+
+async function statsInto(el, id) {
+  const st = await safe(() => api.stats(id)); if (!st || !el) return;
+  const it = (n, l) => `<div><b>${n}</b> <span class="muted">${l}</span></div>`;
+  el.innerHTML = it(st.posts, "publicações") + it(st.followers, "seguidores") + it(st.following, "a seguir") + it(st.friends, "amigos");
+}
+
+/* ---- Perfil de outra pessoa: seguir, amizade e mensagem ---- */
+async function viewUser(username) {
+  const me = await api.me(), prof = await api.profileByUsername(username);
+  if (!prof) return mountPage("", '<main class="page"><div class="card empty">Utilizador não encontrado.</div></main>');
+  if (prof.id === me.id) return viewPerfil();
+  const name = prof.display_name || prof.username;
+  mountPage("", `<main class="profile"><div class="cover" id="p-cover"></div>
+    <div class="profile-head"><span id="p-av"></span><div class="row-actions" id="p-actions"></div></div>
+    <div class="profile-info"><h1 id="p-name"></h1><div class="muted" id="p-user"></div><p id="p-bio"></p><div class="profile-stats" id="p-stats"></div></div>
+    <div id="p-posts" class="feed"></div></main>`);
+  const drawHead = (p) => {
+    $("#p-av").replaceChildren(avatar(p.display_name || p.username, p.avatar_url, "lg", p.avatar_frame)); paintCover($("#p-cover"), p);
+    $("#p-name").textContent = p.display_name || p.username; $("#p-user").textContent = "@" + p.username; $("#p-bio").textContent = p.bio || "";
+  };
+  drawHead(prof);
+
+  const paint = async () => {
+    const [following, fr] = await Promise.all([api.isFollowing(me.id, prof.id), api.friendship(me.id, prof.id)]);
+    const acts = $("#p-actions"); if (!acts) return; acts.replaceChildren();
+    const add = (label, fn, primary) => {
+      const b = html(`<button class="btn${primary ? " btn-primary" : ""}"></button>`); b.textContent = label;
+      b.onclick = async () => { b.disabled = true; await safe(fn); paint(); }; acts.append(b);
+    };
+    add(following ? "A seguir ✓" : "Seguir", () => (following ? api.unfollow(me.id, prof.id) : api.follow(prof.id)), !following);
+    if (!fr) { if (prof.allow_friend_requests === false) acts.append(html('<span class="muted">Não aceita pedidos de amizade</span>')); else add("Adicionar amigo", () => api.sendRequest(prof.id)); }
+    else if (fr.status === "pending") {
+      if (fr.requester_id === me.id) add("Pedido enviado ✕", () => api.deleteFriendship(fr.id));
+      else add("Aceitar pedido", () => api.acceptRequest(fr.id), true);
+    } else {
+      add("Mensagem", async () => { location.hash = "#/chat/" + (await api.startDM(prof.id)); }, true);
+      add("Amigos ✓", async () => { if (confirm("Remover dos amigos?")) await api.deleteFriendship(fr.id); });
+    }
+    statsInto($("#p-stats"), prof.id);
+  };
+  paint();
+  const loadPosts = async () => {
+    const posts = await safe(() => api.posts(me.id, prof.id)) || [], list = $("#p-posts"); if (!list) return; list.replaceChildren();
+    if (!posts.length) list.append(html(`<div class="card empty">${prof.post_visibility && prof.post_visibility !== "everyone" ? "As publicações deste perfil são privadas." : "Ainda não há publicações."}</div>`));
+    posts.forEach((p) => list.append(postEl(p, me.id)));
+  };
+  onLive = async (t) => { if (t === "profiles") { const fresh = await api.profileByUsername(username); if (fresh && $("#p-av")) drawHead(fresh); } loadPosts(); };
+  loadPosts();
+}
+
+/* ---- Amigos: procurar pessoas, pedidos e lista ---- */
+async function viewAmigos() {
+  const me = await api.me();
+  mountPage("amigos", `<main class="page"><h2 class="ptitle">Amigos</h2>
+    <div class="card"><input class="input" id="q" placeholder="Procurar pessoas por nome ou @utilizador…"><div id="results"></div></div>
+    <div class="card hidden" id="req-card"><h3>Pedidos de amizade</h3><div id="reqs"></div></div>
+    <div class="card"><h3>Os teus amigos</h3><div id="friends"></div></div></main>`);
+  const load = async () => {
+    const rows = await safe(() => api.friends(me.id)) || [];
+    const reqs = rows.filter((r) => r.status === "pending" && r.incoming), fr = rows.filter((r) => r.status === "accepted");
+    $("#req-card").classList.toggle("hidden", !reqs.length);
+    $("#reqs").replaceChildren(...reqs.map((r) => listRow(r.other, "@" + r.other.username, "#/u/" + r.other.username, [
+      { label: "Aceitar", primary: true, fn: async () => { await api.acceptRequest(r.fid); load(); } },
+      { label: "Recusar", fn: async () => { await api.deleteFriendship(r.fid); load(); } }])));
+    $("#friends").replaceChildren(...(fr.length ? fr.map((r) => listRow(r.other, "@" + r.other.username, "#/u/" + r.other.username, [
+      { label: "Mensagem", primary: true, fn: async () => { location.hash = "#/chat/" + (await api.startDM(r.other.id)); } }])) : [note("Ainda não tens amigos. Procura pessoas acima!")]));
+  };
+  load();
+  let t;
+  $("#q").oninput = (e) => {
+    clearTimeout(t);
+    t = setTimeout(async () => {
+      const q = e.target.value.trim(), box = $("#results");
+      if (q.length < 2) return box.replaceChildren();
+      const res = await safe(() => api.searchProfiles(q, me.id)) || [];
+      box.replaceChildren(...(res.length ? res.map((p) => listRow(p, "@" + p.username, "#/u/" + p.username)) : [note("Ninguém encontrado.")]));
+    }, 300);
+  };
+}
+
+/* ---- Mensagens: lista de conversas e criação de grupos ---- */
+const convTitle = (c, myId) => (c.type === "group" ? c.name : (c.members.find((m) => m.id !== myId) || {}).display_name || (c.members.find((m) => m.id !== myId) || {}).username || "Conversa");
+
+async function viewMensagens() {
+  const me = await api.me();
+  mountPage("mensagens", `<main class="page"><div class="ptitle-row"><h2 class="ptitle">Mensagens</h2><button class="btn btn-primary" id="new-group">Novo grupo</button></div><div class="card" id="convs"></div></main>`);
+  const convs = await safe(() => api.conversations(me.id)) || [];
+  $("#convs").replaceChildren(...(convs.length ? convs.map((c) => {
+    const other = c.type === "dm" ? c.members.find((m) => m.id !== me.id) || {} : {};
+    return listRow({ name: convTitle(c, me.id), avatar_url: other.avatar_url }, c.type === "group" ? `Grupo · ${c.members.length} membros` : "Conversa privada", "#/chat/" + c.id);
+  }) : [note('Sem conversas ainda. Abre a página <a href="#/amigos" style="color:var(--accent)">Amigos</a> e envia uma mensagem a alguém.')]));
+
+  $("#new-group").onclick = async () => {
+    const fr = (await safe(() => api.friends(me.id)) || []).filter((r) => r.status === "accepted");
+    if (!fr.length) return toast("Precisas de amigos para criar um grupo.");
+    $("#g-members").replaceChildren(...fr.map((r) => {
+      const l = html('<label class="check"><input type="checkbox"><span></span></label>');
+      $("input", l).value = r.other.id; $("span", l).textContent = r.other.display_name || r.other.username; return l;
+    }));
+    $("#g-name").value = ""; $("#group-dialog").showModal();
+  };
+  $("#group-dialog form").onsubmit = async (e) => {
+    if (e.submitter?.value !== "ok") return;
+    const gname = $("#g-name").value.trim(), ids = [...document.querySelectorAll("#g-members input:checked")].map((i) => i.value);
+    if (!gname || !ids.length) { e.preventDefault(); return toast("Dá um nome e escolhe pelo menos um amigo."); }
+    const id = await safe(() => api.createGroup(gname, ids)); if (id) location.hash = "#/chat/" + id;
+  };
+}
+
+/* ---- Chat genérico (conversas e canais): carrega, mostra, envia e atualiza em tempo real ---- */
+let chatChannel = null;
+function stopChat() { if (chatChannel) { sb.removeChannel(chatChannel); chatChannel = null; } }
+
+/* Texto com links clicáveis (só http/https; o resto entra como texto seguro) */
+function setLinked(el, text) {
+  el.textContent = "";
+  text.split(/(https?:\/\/\S+)/g).forEach((part, i) => {
+    if (i % 2) { const a = document.createElement("a"); a.href = part; a.textContent = part; a.className = "lnk"; el.append(a); } else el.append(part);
+  });
+}
+
+async function chatPanel(host, { table, col, id, myId, nameOf, fetchFn, sendFn }) {
+  host.innerHTML = '<div class="msgs"></div><form class="chat-form"><input class="input" maxlength="1000" placeholder="Escreve uma mensagem…" autocomplete="off"><button class="btn btn-primary">Enviar</button></form>';
+  const box = $(".msgs", host), seen = new Set();
+  const add = (m) => {
+    if (seen.has(m.id)) return; seen.add(m.id);
+    const mine = m.sender_id === myId, el = html('<div class="msg"><small></small><span></span></div>');
+    if (mine) el.classList.add("me");
+    if (mine || !nameOf) $("small", el).remove(); else $("small", el).textContent = nameOf(m.sender_id);
+    setLinked($("span", el), m.content); box.append(el); box.scrollTop = box.scrollHeight;
+  };
+  const sync = async () => ((await safe(fetchFn)) || []).forEach(add);
+  await sync();
+  chatChannel = sb.channel(`${table}-${id}`).on("postgres_changes", { event: "INSERT", schema: "public", table, filter: `${col}=eq.${id}` }, (pl) => add(pl.new)).subscribe();
+  $("form", host).onsubmit = async (e) => {
+    e.preventDefault();
+    const inp = $("input", host), text = inp.value.trim(); if (!text) return;
+    inp.value = ""; await safe(() => sendFn(text)); setTimeout(sync, 700);   // plano B se o tempo real falhar
+  };
+}
+
+async function viewChat(id) {
+  const me = await api.me(), conv = await api.conversation(id, me.id);
+  if (!conv) return mountPage("mensagens", '<main class="page"><div class="card empty">Conversa não encontrada.</div></main>', false);
+  const who = Object.fromEntries(conv.members.map((m) => [m.id, m])), isGroup = conv.type === "group", other = conv.members.find((m) => m.id !== me.id);
+  mountPage("mensagens", `<main class="chat"><div class="chat-head"><a href="#/mensagens" class="btn">←</a><b id="c-title"></b>
+    <button class="btn hidden" id="call-btn" aria-label="Ligar"><i class="ic ic-phone"></i> Ligar</button><button class="btn hidden" id="leave">Sair do grupo</button></div><div class="chat-host" id="chat-host"></div></main>`, false);
+  const title = convTitle(conv, me.id); $("#c-title").textContent = title;
+  if (isGroup) {
+    $("#leave").classList.remove("hidden");
+    $("#leave").onclick = async () => { if (confirm("Sair deste grupo?")) { await safe(() => api.leaveConversation(id, me.id)); location.hash = "#/mensagens"; } };
+  } else if (other) {
+    $("#call-btn").classList.remove("hidden"); $("#call-btn").onclick = () => startCall({ id: other.id, name: title }, me.id);
+  }
+  await chatPanel($("#chat-host"), { table: "messages", col: "conversation_id", id, myId: me.id,
+    nameOf: isGroup ? (u) => (who[u] || {}).display_name || "Ex-membro" : null, fetchFn: () => api.messages(id), sendFn: (t) => api.sendMessage(id, t) });
+}
+
+/* ---- Comunidades: lista, página com canais, convites e definições ---- */
+const PERMS = [["manage_community", "Gerir comunidade e cargos"], ["manage_channels", "Gerir canais"], ["manage_members", "Gerir membros"], ["invite_members", "Convidar pessoas"]];
+/* O dono tem todas as permissões; os outros têm as do seu cargo */
+function myPerms(c, myId) {
+  if (c.created_by === myId) return Object.fromEntries(PERMS.map(([k]) => [k, true]));
+  const m = c.community_members.find((x) => x.user_id === myId), r = c.community_roles.find((x) => x.id === (m || {}).role_id);
+  return Object.fromEntries(PERMS.map(([k]) => [k, !!(r && r[k])]));
+}
+
+async function viewComunidades() {
+  const me = await api.me();
+  mountPage("comunidades", `<main class="page"><div class="ptitle-row"><h2 class="ptitle">Comunidades</h2><button class="btn btn-primary" id="new-comm">Criar</button></div><div class="card" id="comms"></div></main>`, false);
+  const load = async () => {
+    const list = await safe(() => api.communities()) || [];
+    $("#comms").replaceChildren(...(list.length ? list.map((c) => {
+      const joined = c.community_members.some((m) => m.user_id === me.id);
+      return listRow({ name: c.name, avatar_url: c.icon_url }, `${c.is_private ? "🔒 " : ""}${c.community_members.length} membros${c.description ? " · " + c.description : ""}`, "#/c/" + c.id,
+        joined ? [] : [{ label: "Entrar", primary: true, fn: async () => { await api.joinCommunity(c.id); load(); } }]);
+    }) : [note("Ainda não há comunidades. Cria a primeira!")]));
+  };
+  load();
+  $("#new-comm").onclick = () => { $("#cm-name").value = ""; $("#cm-desc").value = ""; $("#cm-private").checked = false; $("#comm-dialog").showModal(); };
+  $("#comm-dialog form").onsubmit = async (e) => {
+    if (e.submitter?.value !== "ok") return;
+    const cname = $("#cm-name").value.trim();
+    if (cname.length < 2) { e.preventDefault(); return toast("Dá um nome à comunidade."); }
+    const id = await safe(() => api.createCommunity(cname, $("#cm-desc").value.trim(), $("#cm-private").checked)); if (id) location.hash = "#/c/" + id;
+  };
+}
+
+async function viewComunidade(arg) {
+  const [id, chId] = arg.split("/"), me = await api.me(), c = await api.community(id);
+  if (!c) return mountPage("comunidades", '<main class="page"><div class="card empty">Comunidade não encontrada ou privada.</div></main>', false);
+  const mine = c.community_members.some((m) => m.user_id === me.id), P = myPerms(c, me.id);
+  const chans = [...c.community_channels].sort((a, b) => a.id - b.id), ch = chans.find((x) => String(x.id) === chId) || chans[0];
+  mountPage("comunidades", `<main class="page"><div class="card comm-head"><span id="c-ic"></span><div class="grow"><h2 id="c-name"></h2><p class="muted" id="c-desc"></p></div></div>
+    <div class="row-actions" id="c-actions" style="justify-content:flex-start"></div><div class="tabs chans" id="c-chans"></div><div class="card chan-host" id="c-chat"></div></main>`, false);
+  $("#c-ic").append(avatar(c.name, c.icon_url, "md")); $("#c-name").textContent = (c.is_private ? "🔒 " : "") + c.name;
+  $("#c-desc").textContent = `${c.community_members.length} membros${c.description ? " · " + c.description : ""}`;
+  onLive = async (t) => {   // foto/nome da comunidade mudaram
+    if (t !== "communities") return; const f = await api.community(id); if (!f || !$("#c-ic")) return;
+    $("#c-ic").replaceChildren(avatar(f.name, f.icon_url, "md")); $("#c-name").textContent = (f.is_private ? "🔒 " : "") + f.name;
+    $("#c-desc").textContent = `${f.community_members.length} membros${f.description ? " · " + f.description : ""}`;
+  };
+  const acts = [];
+  if (!mine) acts.push({ label: "Entrar", primary: true, fn: async () => { await api.joinCommunity(c.id); router(); } });
+  else if (c.created_by !== me.id) acts.push({ label: "Sair", fn: async () => { if (confirm("Sair desta comunidade?")) { await api.leaveCommunity(c.id, me.id); router(); } } });
+  if (mine && P.invite_members) acts.push({ label: "Convidar", primary: true, fn: () => openInvite(c, me.id) });
+  if (mine && Object.values(P).some(Boolean)) acts.push({ label: "Definições", icon: "gear", fn: () => (location.hash = "#/cfg/" + c.id) });
+  addActions($(".page"), acts);   // preenche o primeiro .row-actions (#c-actions)
+  chans.forEach((x) => { const a = html(`<a class="btn${ch && x.id === ch.id ? " btn-primary" : ""}"></a>`); a.href = `#/c/${c.id}/${x.id}`; a.textContent = "# " + x.name; if (mine) $("#c-chans").append(a); });
+  const host = $("#c-chat");
+  if (!mine || !ch) { host.append(note(mine ? "Esta comunidade ainda não tem canais." : "Entra na comunidade para ver os canais e conversar.")); host.style.height = "auto"; host.style.padding = "16px"; return; }
+  const names = Object.fromEntries((await api.communityMembers(c.id)).map((m) => [m.user_id, m.profiles.display_name || m.profiles.username]));
+  await chatPanel(host, { table: "channel_messages", col: "channel_id", id: ch.id, myId: me.id, nameOf: (u) => names[u] || "Ex-membro", fetchFn: () => api.channelMessages(ch.id), sendFn: (t) => api.sendChannelMessage(ch.id, t) });
+}
+
+/* Convidar: link (estilo Discord) ou mensagem direta a um amigo com o link */
+async function openInvite(c, myId) {
+  const code = await safe(() => api.getInvite(c.id)); if (!code) return;
+  const link = location.origin + location.pathname + "#/convite/" + code;
+  $("#inv-link").value = link;
+  $("#inv-copy").onclick = async () => { try { await navigator.clipboard.writeText(link); toast("Link copiado"); } catch { $("#inv-link").select(); toast("Seleciona e copia o link."); } };
+  const inside = new Set((await api.communityMembers(c.id)).map((m) => m.user_id));
+  const fr = ((await safe(() => api.friends(myId))) || []).filter((r) => r.status === "accepted" && !inside.has(r.other.id));
+  $("#inv-friends").replaceChildren(...(fr.length ? fr.map((r) => listRow(r.other, "@" + r.other.username, null, [{ label: "Convidar", primary: true, fn: async () => {
+    const cid = await api.startDM(r.other.id); await api.sendMessage(cid, `Convite para a comunidade "${c.name}": ${link}`); toast("Convite enviado");
+  } }])) : [note("Sem amigos para convidar (ou já estão na comunidade).")]));
+  $("#invite-dialog").showModal();
+}
+
+async function viewConvite(code) {   // abre o link de convite: entra e vai para a comunidade
+  const id = await safe(() => api.joinByInvite(code)); location.hash = id ? "#/c/" + id : "#/comunidades";
+}
+
+/* ---- Definições da comunidade: geral, canais, cargos e membros ---- */
+async function viewCfg(id) {
+  const me = await api.me(), c = await api.community(id);
+  if (!c) return mountPage("comunidades", '<main class="page"><div class="card empty">Comunidade não encontrada.</div></main>', false);
+  const P = myPerms(c, me.id);
+  if (!Object.values(P).some(Boolean)) return (location.hash = "#/c/" + id);
+  mountPage("comunidades", `<main class="page"><div class="ptitle-row"><h2 class="ptitle">Definições</h2><a class="btn" href="#/c/${id}">← Voltar</a></div><div id="cfg" class="page" style="padding:0"></div></main>`, false);
+  const root = $("#cfg"), reload = () => viewCfg(id);
+  const card = (t) => { const el = html("<div class='card cfg'><h3></h3></div>"); $("h3", el).textContent = t; root.append(el); return el; };
+  const roles = [...c.community_roles].sort((a, b) => a.id - b.id), chans = [...c.community_channels].sort((a, b) => a.id - b.id);
+
+  if (P.manage_community) {
+    const g = card("Geral");
+    g.insertAdjacentHTML("beforeend", `<div class="field"><label>Foto da comunidade</label><input class="input" id="cf-icon" type="file" accept="image/*"></div>
+      <div class="field"><label>Nome</label><input class="input" id="cf-name" maxlength="40"></div>
+      <div class="field"><label>Descrição</label><textarea class="input" id="cf-desc" maxlength="200" style="min-height:80px"></textarea></div>
+      <label class="check"><input type="checkbox" id="cf-priv"><span>Privada (só entra quem tiver convite)</span></label>
+      <div class="row-actions" id="cf-acts" style="margin-top:12px"></div>`);
+    $("#cf-name").value = c.name; $("#cf-desc").value = c.description || ""; $("#cf-priv").checked = c.is_private;
+    const acts = [{ label: "Guardar", primary: true, fn: async () => {
+      await api.updateCommunity(c.id, { name: $("#cf-name").value.trim() || c.name, description: $("#cf-desc").value.trim(), is_private: $("#cf-priv").checked }, $("#cf-icon").files[0]);
+      toast("Guardado"); reload(); } }];
+    if (c.created_by === me.id) acts.push({ label: "Apagar comunidade", fn: async () => { if (confirm(`Apagar "${c.name}" para sempre?`)) { await api.deleteCommunity(c.id); location.hash = "#/comunidades"; } } });
+    addActions(g, acts);
+  }
+
+  if (P.manage_channels) {
+    const k = card("Canais");
+    chans.forEach((x) => { const r = html('<div class="list-item"><div class="grow"><b></b></div><div class="row-actions"></div></div>'); $("b", r).textContent = "# " + x.name;
+      addActions(r, [
+        { label: "Renomear", fn: async () => { const n = prompt("Novo nome do canal:", x.name); if (n && n.trim()) { await api.renameChannel(x.id, n.trim().toLowerCase().replace(/\s+/g, "-")); reload(); } } },
+        { label: "Apagar", fn: async () => { if (chans.length < 2) return toast("É preciso pelo menos um canal."); if (confirm(`Apagar #${x.name} e as suas mensagens?`)) { await api.deleteChannel(x.id); reload(); } } }]);
+      k.append(r); });
+    k.append(html('<div class="add-row"><input class="input" id="new-ch" maxlength="30" placeholder="novo-canal"><button class="btn btn-primary" id="add-ch">Criar canal</button></div>'));
+    $("#add-ch").onclick = async () => { const n = $("#new-ch").value.trim().toLowerCase().replace(/\s+/g, "-"); if (!n) return; await safe(() => api.addChannel(c.id, n)); reload(); };
+  }
+
+  if (P.manage_community) {
+    const k = card("Cargos");
+    roles.forEach((r) => {
+      const el = html('<div class="role"><div class="role-top"><input type="color" class="rc"><input class="input rn" maxlength="24"></div><div class="perm-grid"></div><div class="row-actions"></div></div>');
+      $(".rc", el).value = r.color || "#8b7bff"; $(".rn", el).value = r.name;
+      PERMS.forEach(([key, label]) => { const l = html(`<label class="check"><input type="checkbox" data-k="${key}"><span></span></label>`); $("span", l).textContent = label; $("input", l).checked = !!r[key]; $(".perm-grid", el).append(l); });
+      addActions(el, [{ label: "Guardar", primary: true, fn: async () => {
+        const f = { name: $(".rn", el).value.trim() || r.name, color: $(".rc", el).value }; el.querySelectorAll("[data-k]").forEach((i) => (f[i.dataset.k] = i.checked));
+        await api.updateRole(r.id, f); toast("Cargo guardado"); } }, ...(r.is_default ? [] : [{ label: "Apagar", fn: async () => { if (confirm(`Apagar o cargo "${r.name}"?`)) { await api.deleteRole(r.id); reload(); } } }])]);
+      k.append(el);
+    });
+    const nb = html('<button class="btn btn-primary" style="margin-top:6px">+ Novo cargo</button>'); nb.onclick = async () => { await safe(() => api.addRole(c.id)); reload(); }; k.append(nb);
+  }
+
+  if (P.manage_members) {
+    const k = card("Membros");
+    for (const m of await api.communityMembers(c.id)) {
+      const p = m.profiles, el = listRow(p, "@" + p.username, "#/u/" + p.username);
+      if (p.id === c.created_by) { $(".row-actions", el).append(html('<span class="muted">Dono</span>')); }
+      else {
+        const sel = html('<select class="input sel"><option value="">Sem cargo</option></select>');
+        roles.forEach((r) => { const o = html("<option></option>"); o.value = r.id; o.textContent = r.name; sel.append(o); });
+        sel.value = m.role_id || ""; sel.onchange = () => safe(() => api.setMemberRole(c.id, p.id, sel.value ? Number(sel.value) : null));
+        $(".row-actions", el).append(sel);
+        if (p.id !== me.id) addActions(el, [{ label: "Expulsar", fn: async () => { if (confirm(`Expulsar ${p.username}?`)) { await api.leaveCommunity(c.id, p.id); reload(); } } }]);
+      }
+      k.append(el);
+    }
+  }
+}
+
+/* ---- Definições da conta: notificações, microfone e apagar conta ---- */
+async function viewDefinicoes() {
+  const me = await api.me(), prof = await api.profile(me.id);
+  mountPage("perfil", `<main class="page"><div class="ptitle-row"><h2 class="ptitle">Definições</h2><a class="btn" href="#/perfil">← Perfil</a></div>
+    <div class="card"><h3>Aparência</h3>
+      <div class="field"><label>Tema</label><div class="tabs" id="theme-opts"></div></div>
+      <div class="field"><label>Cor de destaque</label><div class="swatches" id="accent-opts"></div></div>
+      <label class="check"><input type="checkbox" id="reduce"><span>Reduzir animações e efeitos</span></label></div>
+    <div class="card"><h3>Privacidade</h3>
+      <div class="field"><label for="priv-posts">Quem pode ver as minhas publicações</label><select class="input" id="priv-posts"><option value="everyone">Todos</option><option value="friends">Só amigos</option><option value="only_me">Só eu</option></select></div>
+      <label class="check"><input type="checkbox" id="priv-req"><span>Aceitar pedidos de amizade</span></label></div>
+    <div class="card"><h3>Código de recuperação</h3><p class="muted">Serve para recuperar a conta se esqueceres a palavra-passe. Gerar um novo invalida o anterior.</p><button class="btn" id="rc-new">Gerar novo código</button></div>
+    <div class="card"><h3>Notificações de mensagens</h3><p class="muted" id="n-state"></p><button class="btn btn-primary" id="n-btn">Ativar notificações</button><button class="btn hidden" id="n-test">Enviar notificação de teste</button></div>
+    <div class="card"><h3>Microfone (chamadas)</h3><p class="muted" id="m-state"></p><button class="btn btn-primary" id="m-btn">Testar microfone</button></div>
+    <div class="card"><h3>Zona de perigo</h3><p class="muted">Apagar a conta remove para sempre o teu perfil, publicações, mensagens e as comunidades que criaste.</p><button class="btn btn-danger" id="del-btn">Apagar a minha conta</button></div></main>`, false);
+  // Aparência (aplica logo e guarda neste aparelho)
+  const THEMES = [["dark", "Escuro"], ["light", "Claro"], ["auto", "Sistema"]], ACCENTS = ["#8b7bff", "#3ddbb5", "#ff7eb6", "#ff9f5a", "#5ab0ff"];
+  const paintOpts = () => {
+    const cur = localStorage.getItem("inlog_theme") || "dark", acc = localStorage.getItem("inlog_accent") || "#8b7bff";
+    $("#theme-opts").replaceChildren(...THEMES.map(([k, l]) => { const b = html(`<button class="btn${k === cur ? " btn-primary" : ""}"></button>`); b.textContent = l; b.onclick = () => { localStorage.setItem("inlog_theme", k); applyTheme(); paintOpts(); }; return b; }));
+    $("#accent-opts").replaceChildren(...ACCENTS.map((c) => { const b = html(`<button class="swatch${c === acc ? " on" : ""}" aria-label="Cor ${c}"></button>`); b.style.background = c; b.onclick = () => { localStorage.setItem("inlog_accent", c); applyTheme(); paintOpts(); }; return b; }));
+  };
+  paintOpts();
+  $("#reduce").checked = !!localStorage.getItem("inlog_reduce");
+  $("#reduce").onchange = (e) => { e.target.checked ? localStorage.setItem("inlog_reduce", "1") : localStorage.removeItem("inlog_reduce"); applyTheme(); };
+  $("#rc-new").onclick = async () => {
+    if (!confirm("Gerar um novo código? O código antigo deixa de funcionar.")) return;
+    const code = await safe(() => api.generateRecoveryCode()); if (code) showRecoveryCode(code);
+  };
+  // Privacidade (guardada na conta)
+  $("#priv-posts").value = prof.post_visibility || "everyone"; $("#priv-req").checked = prof.allow_friend_requests !== false;
+  const savePriv = () => safe(async () => { await api.updateProfile(me.id, { post_visibility: $("#priv-posts").value, allow_friend_requests: $("#priv-req").checked }); toast("Privacidade guardada"); });
+  $("#priv-posts").onchange = savePriv; $("#priv-req").onchange = savePriv;
+  const nState = () => {
+    const p = "Notification" in window ? Notification.permission : "unsupported";
+    $("#n-state").textContent = { granted: "Ativas ✓ Aparecem quando o InLog está aberto em segundo plano.", denied: "Bloqueadas. Permite-as nas definições do site no navegador.", default: "Ainda não ativadas.", unsupported: "Este navegador não suporta notificações." }[p];
+    $("#n-btn").classList.toggle("hidden", p !== "default"); $("#n-test").classList.toggle("hidden", p !== "granted");
+  };
+  nState(); $("#n-btn").onclick = async () => { await Notification.requestPermission(); nState(); };
+  $("#n-test").onclick = async () => { if (!(await systemNotify("InLog", "As notificações estão a funcionar ✓", "#/", null, true))) toast("Não foi possível mostrar a notificação neste navegador."); };
+  const mState = async () => {
+    try { const r = await navigator.permissions.query({ name: "microphone" }); $("#m-state").textContent = { granted: "Permitido ✓", denied: "Bloqueado. Permite-o nas definições do site no navegador.", prompt: "Ainda não permitido." }[r.state]; }
+    catch { $("#m-state").textContent = "Toca em Testar para pedir a permissão."; }
+  };
+  mState();
+  $("#m-btn").onclick = async () => {
+    try { (await navigator.mediaDevices.getUserMedia({ audio: true })).getTracks().forEach((t) => t.stop()); toast("Microfone a funcionar ✓"); } catch { toast("Microfone bloqueado ou indisponível."); }
+    mState();
+  };
+  $("#del-btn").onclick = () => { $("#d-confirm").value = ""; $("#delete-dialog").showModal(); };
+  $("#delete-dialog form").onsubmit = async (e) => {
+    if (e.submitter?.value !== "ok") return;
+    if ($("#d-confirm").value.trim() !== prof.username) { e.preventDefault(); return toast("O nome de utilizador não coincide."); }
+    const ok = await safe(async () => { await api.deleteAccount(me.id); return true; });
+    if (ok) { stopListeners(); try { await sb.auth.signOut(); } catch {} toast("Conta apagada."); location.hash = "#/login"; }
+  };
+}
+
+/* ---------- Notificações e chamadas de voz (WebRTC, 1 para 1) ----------
+   O sinal para tocar/atender passa pelo Realtime do Supabase; o áudio vai
+   diretamente entre os dois navegadores. Usa só servidores STUN públicos. */
+let liveChannel = null, onLive = null, liveTimer = null;
+const pokeLive = (table) => { clearTimeout(liveTimer); liveTimer = setTimeout(() => onLive && onLive(table), 500); };   // evita recarregar em rajada
+let recoveryChecked = false;
+let ME = null, msgChannel = null, myCallChannel = null, call = null, incoming = null, callTick = null;
+const ICE = { iceServers: [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }, ...TURN_SERVERS], iceCandidatePoolSize: 2 };
+
+async function systemNotify(title, body, hash, icon, force = false) {
+  if (!("Notification" in window) || Notification.permission !== "granted" || (!force && !document.hidden)) return false;
+  const opts = { body, icon: icon || undefined, tag: hash, data: { hash } };
+  try {
+    // No Android o navegador só aceita notificações criadas pelo service worker (sw.js)
+    const reg = "serviceWorker" in navigator ? await Promise.race([navigator.serviceWorker.ready, new Promise((r) => setTimeout(r, 2500))]) : null;
+    if (reg && reg.showNotification) { await reg.showNotification(title, opts); return true; }
+    const n = new Notification(title, opts); n.onclick = () => { window.focus(); location.hash = hash; n.close(); }; return true;
+  } catch { return false; }
+}
+
+function startListeners(myId) {
+  if (!msgChannel) msgChannel = sb.channel("inbox").on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, async ({ new: m }) => {
+    if (m.sender_id === myId) return;
+    if (location.hash === "#/chat/" + m.conversation_id && !document.hidden) return;   // já estás a ver esta conversa
+    const p = await safe(() => api.profile(m.sender_id)), name = (p && (p.display_name || p.username)) || "Nova mensagem";
+    toast(`${name}: ${m.content.slice(0, 60)}`); systemNotify(name, m.content, "#/chat/" + m.conversation_id, p && p.avatar_url);
+  }).subscribe();
+  // Tempo real: o que os outros fazem (publicar, apagar, gostos, mudar de foto) aparece sem recarregar
+  if (!liveChannel) liveChannel = sb.channel("live")
+    .on("postgres_changes", { event: "*", schema: "public", table: "posts" }, (pl) => { if (!(pl.new && pl.new.user_id === myId)) pokeLive("posts"); })
+    .on("postgres_changes", { event: "*", schema: "public", table: "likes" }, (pl) => { if (!(pl.new && pl.new.user_id === myId)) pokeLive("likes"); })
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, (pl) => { if (pl.new.id !== myId) pokeLive("profiles"); })
+    .on("postgres_changes", { event: "*", schema: "public", table: "comments" }, () => { if (openThreads.size) openThreads.forEach((f) => f()); else pokeLive("comments"); })
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "communities" }, () => pokeLive("communities"))
+    .subscribe();
+  if (!myCallChannel) myCallChannel = sb.channel("calls:" + myId).on("broadcast", { event: "signal" }, ({ payload }) => onSignal(payload, myId)).subscribe();
+}
+function stopListeners() {
+  recoveryChecked = false;
+  for (const ch of [msgChannel, myCallChannel, liveChannel]) if (ch) sb.removeChannel(ch);
+  msgChannel = myCallChannel = liveChannel = null; onLive = null; ME = null; if (call) endCall(false);
+}
+
+const openOut = (peerId) => new Promise((res) => { const ch = sb.channel("calls:" + peerId); ch.subscribe((st) => st === "SUBSCRIBED" && res(ch)); });
+const sig = (payload) => call && call.out.send({ type: "broadcast", event: "signal", payload: { ...payload, from: call.me } });
+const getMic = async () => {
+  try { return await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } }); }
+  catch (e) { toast(e.name === "NotFoundError" ? "Nenhum microfone encontrado." : "Sem acesso ao microfone. Permite-o nas definições do site."); return null; }
+};
+/* Se o áudio não ligar em 20 s, avisa em vez de ficar calado */
+function failIfNotConnected() {
+  if (!call) return; clearTimeout(call.timeout);
+  call.timeout = setTimeout(() => { if (call && call.state !== "live") { toast("Não foi possível ligar o áudio. A rede pode precisar de um servidor TURN."); endCall(true); } }, 20000);
+}
+
+function setupPC() {
+  const pc = (call.pc = new RTCPeerConnection(ICE));
+  call.stream.getTracks().forEach((t) => pc.addTrack(t, call.stream));
+  pc.onicecandidate = (e) => e.candidate && sig({ type: "ice", candidate: e.candidate });
+  pc.ontrack = (e) => {   // áudio recebido → altifalante
+    const a = $("#remote-audio"); a.srcObject = e.streams[0] || new MediaStream([e.track]); a.muted = false; a.volume = 1; a.play().catch(() => {});
+  };
+  pc.onconnectionstatechange = () => {
+    if (!call) return;
+    if (pc.connectionState === "connected") { call.state = "live"; call.t0 = Date.now(); clearTimeout(call.timeout); showCallUI(); }
+    if (pc.connectionState === "failed") { toast("A ligação falhou. A rede pode precisar de um servidor TURN."); endCall(true); }
+  };
+}
+
+async function startCall(peer, myId) {
+  if (call || incoming) return toast("Já estás numa chamada.");
+  const stream = await getMic(); if (!stream) return;
+  call = { me: myId, peer, stream, state: "calling", pending: [] };
+  call.out = await openOut(peer.id); setupPC();
+  const offer = await call.pc.createOffer(); await call.pc.setLocalDescription(offer);
+  sig({ type: "offer", sdp: offer, name: (ME && (ME.display_name || ME.username)) || "Alguém" });
+  showCallUI(); call.timeout = setTimeout(() => { if (call && call.state === "calling") { toast("Sem resposta."); endCall(true); } }, 35000);
+}
+
+async function acceptCall() {
+  const inc = incoming, stream = await getMic();
+  if (!stream) return declineCall();
+  incoming = null; $("#incoming").classList.add("hidden");
+  call = { me: ME.id, peer: { id: inc.from, name: inc.name }, stream, state: "connecting", pending: [] };
+  call.out = await openOut(inc.from); setupPC();
+  await call.pc.setRemoteDescription(inc.sdp);
+  for (const c of inc.ice) await call.pc.addIceCandidate(c);
+  const ans = await call.pc.createAnswer(); await call.pc.setLocalDescription(ans);
+  sig({ type: "answer", sdp: ans }); showCallUI(); failIfNotConnected();
+}
+async function declineCall() {
+  const inc = incoming; incoming = null; $("#incoming").classList.add("hidden"); if (!inc) return;
+  const ch = await openOut(inc.from); ch.send({ type: "broadcast", event: "signal", payload: { type: "decline", from: ME.id } }); setTimeout(() => sb.removeChannel(ch), 1000);
+}
+function endCall(notify) {
+  if (!call) return;
+  if (notify) sig({ type: "hangup" });
+  clearTimeout(call.timeout); clearInterval(callTick);
+  call.stream.getTracks().forEach((t) => t.stop()); if (call.pc) call.pc.close();
+  const out = call.out; setTimeout(() => sb.removeChannel(out), 1000);
+  call = null; $("#remote-audio").srcObject = null; $("#call-ui").classList.add("hidden");
+}
+function showCallUI() {
+  if (!call) return; $("#call-ui").classList.remove("hidden");
+  const paint = () => { if (!call) return; const s = call.t0 ? Math.floor((Date.now() - call.t0) / 1000) : 0;
+    $("#call-text").textContent = call.state === "live" ? `${call.peer.name} · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}` : call.state === "calling" ? `A chamar ${call.peer.name}…` : `A ligar o áudio com ${call.peer.name}…`; };
+  paint(); clearInterval(callTick); callTick = setInterval(paint, 1000);
+}
+
+async function onSignal(m, myId) {
+  if (m.type === "offer") {
+    const fr = await api.friendship(myId, m.from);
+    if (!fr || fr.status !== "accepted") return;   // só amigos podem ligar
+    if (call || incoming) { const ch = await openOut(m.from); ch.send({ type: "broadcast", event: "signal", payload: { type: "decline", from: myId } }); return setTimeout(() => sb.removeChannel(ch), 1000); }
+    incoming = { from: m.from, name: m.name, sdp: m.sdp, ice: [] };
+    $("#inc-text").textContent = `${m.name} está a ligar…`; $("#incoming").classList.remove("hidden");
+    systemNotify("Chamada de " + m.name, "Toca para atender", "#/mensagens");
+    const mark = incoming; setTimeout(() => { if (incoming === mark) { incoming = null; $("#incoming").classList.add("hidden"); toast("Chamada perdida de " + m.name); } }, 35000);
+  } else if (m.type === "ice") {
+    if (call && call.peer.id === m.from) { if (call.pc.remoteDescription) call.pc.addIceCandidate(m.candidate).catch(() => {}); else call.pending.push(m.candidate); }
+    else if (incoming && incoming.from === m.from) incoming.ice.push(m.candidate);
+  } else if (m.type === "answer" && call && call.peer.id === m.from) {
+    call.state = "connecting"; failIfNotConnected(); showCallUI();
+    await call.pc.setRemoteDescription(m.sdp); for (const c of call.pending) await call.pc.addIceCandidate(c).catch(() => {}); call.pending = [];
+  } else if (m.type === "hangup" || m.type === "decline") {
+    if (incoming && incoming.from === m.from) { incoming = null; $("#incoming").classList.add("hidden"); toast("Chamada perdida"); }
+    else if (call && call.peer.id === m.from) { toast(m.type === "decline" ? "Chamada recusada." : "Chamada terminada."); endCall(false); }
+  }
+}
+(function wireCalls() {
+  $("#call-end").onclick = () => endCall(true); $("#inc-yes").onclick = acceptCall; $("#inc-no").onclick = declineCall;
+  $("#call-mute").onclick = () => { const t = call && call.stream.getAudioTracks()[0]; if (t) { t.enabled = !t.enabled; $("#call-mute").textContent = t.enabled ? "🎤" : "🔇"; } };
+})();
+
+/* ---------- 6. ROUTER E ARRANQUE ----------
+   Rotas com # (ex.: #/u/maria) porque o GitHub Pages só serve ficheiros estáticos. */
+const routes = { "/": viewFeed, "/login": viewLogin, "/registo": viewRegisto, "/recuperar": viewRecuperar, "/perfil": viewPerfil, "/amigos": viewAmigos, "/mensagens": viewMensagens,
+  "/chat": viewChat, "/comunidades": viewComunidades, "/c": viewComunidade, "/u": viewUser,
+  "/cfg": viewCfg, "/convite": viewConvite, "/definicoes": viewDefinicoes };
+const PUBLIC = ["/login", "/registo", "/recuperar"];
+
+/* Mostra instruções se o Supabase ainda não estiver configurado */
+function viewSetup() {
+  document.body.classList.add("auth-mode");
+  $("#app").innerHTML = `<main class="card auth-card"><a href="#/" class="logo">${LOGO}<span>InLog</span></a>
+    <h1>Falta ligar o Supabase</h1>
+    <p class="sub muted">Abre o <b>index.html</b> e preenche <b>SUPABASE_URL</b> e <b>SUPABASE_ANON_KEY</b> no início do script.</p></main>`;
+}
+
+async function router() {
+  if (!CONFIGURED) return viewSetup();
+  stopChat();
+  const path = location.hash.slice(1) || "/";
+  const [, root = "", arg = ""] = path.match(/^\/([^/]*)(?:\/(.+))?$/) || [];
+  const key = "/" + root, user = await api.me(), isPublic = PUBLIC.includes(key);
+  if (!user) {
+    stopListeners();
+    if (key === "/convite") localStorage.setItem("inlog_invite", arg);   // lembra o convite até a pessoa entrar
+    if (!isPublic) return (location.hash = "#/login");   // exige sessão
+  }
+  if (user && isPublic) return (location.hash = "#/");
+  const pend = user && localStorage.getItem("inlog_invite");
+  if (pend) { localStorage.removeItem("inlog_invite"); return (location.hash = "#/convite/" + pend); }
+  if (user) { if (!ME) ME = await safe(() => api.profile(user.id)); startListeners(user.id); }
+  if (user && !recoveryChecked) {   // quem ainda não tem código de recuperação recebe um agora
+    recoveryChecked = true;
+    if ((await safe(() => api.hasRecoveryCode())) === false) { const code = await safe(() => api.generateRecoveryCode()); if (code) showRecoveryCode(code); }
+  }
+  composerCommunity = null; onLive = null; window.scrollTo(0, 0);
+  await safe(() => (routes[key] || viewFeed)(decodeURIComponent(arg)));
+}
+window.addEventListener("hashchange", router);
+if (CONFIGURED) sb.auth.onAuthStateChange((ev) => { if (ev === "SIGNED_OUT") router(); });
+router();
+</script>
+</body>
+</html>
